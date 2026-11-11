@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BZIK — Sell the house before it's built</title>
+<meta name="description" content="Renders, walkthroughs and interactive 3D assembly for container-house distributors, contractors and real estate. Every output rendered from one dimension-true model.">
+<meta name="theme-color" content="#FFFFFF">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&family=Heebo:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="site.css?v=44">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script type="module" src="js/main.js?v=63"></script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="logo" href="#top" aria-label="BZIK"></a>
+  <nav>
+    <a href="#plan" data-i18n="nav.plan">Plan</a>
+    <a href="#explore" data-i18n="nav.explore">Live 3D</a>
+    <a href="#work" data-i18n="nav.work">Work</a>
+    <a href="#packages" data-i18n="nav.outputs">Packages</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="en" aria-pressed="true">EN</button>
+    <button type="button" data-lang="he" aria-pressed="false" lang="he">עב</button>
+  </div>
+  <a class="nav-cta" href="mailto:bzik.david@gmail.com?subject=Container%20house%20visualization" data-i18n="cta.short">Start a project</a>
+</header>
+
+<main id="top">
+<!-- HERO: inset media card, headline bottom-left -->
+<section class="hero" data-theme="dark">
+  <div class="card hero-card">
+    <img class="hero-img" src="assets/img/ed-l01-southeast-hero.jpg" alt="The two-storey container house from the south-east, late-afternoon light (AI-assisted concept image)" width="1536" height="1024">
+    <div class="hero-copy">
+      <p class="label" data-i18n="hero.kicker">Visualization for container homes</p>
+      <h1><span data-i18n="hero.t1">Sell the house</span><br><span data-i18n="hero.t2">before it's built.</span></h1>
+    </div>
+    <p class="hero-meta" data-i18n="hero.scroll">Scroll</p>
+  </div>
+</section>
+
+<!-- INTRO + FACTS -->
+<section class="intro gut">
+  <p class="label" data-i18n="intro.k">BZIK · Visualization studio</p>
+  <div>
+    <p class="intro-text" data-i18n="hero.lede">Photoreal images, films and interactive 3D that make buyers say yes. Every one built to the millimetre from your own drawings.</p>
+    <a class="btn" href="mailto:bzik.david@gmail.com?subject=Container%20house%20visualization"><span data-i18n="cta.send">Book a project call</span> <i class="arr">→</i></a>
+  </div>
+</section>
+<section class="stats gut">
+  <div><b data-i18n="meta.1d">Your own plans</b><span data-i18n="meta.1t">Built from</span></div>
+  <div><b data-i18n="meta.2d">To the millimetre</b><span data-i18n="meta.2t">Accuracy</span></div>
+  <div><b data-i18n="meta.3d">Every output</b><span data-i18n="meta.3t">One model</span></div>
+  <div><b data-i18n="meta.4d">Sales teams</b><span data-i18n="meta.4t">Made for</span></div>
+</section>
+
+<!-- PLAN: sticky list beside clean top views and sections rendered from the model -->
+<section class="plan" id="plan">
+  <div class="plan-stage gut">
+    <div class="plan-copy">
+      <p class="label" data-i18n="cap.plan.k">01 · It starts with your PDF</p>
+      <h2 data-i18n="cap.plan.t">Your plan, exactly as drawn.</h2>
+      <p class="muted" data-i18n="cap.plan.b">No redrawing, no guesswork. We build straight on top of your sheets, so every wall lands exactly where you put it.</p>
+      <ol class="pick-list" id="planList">
+        <li><button type="button"><span data-i18n="plan.gf">Ground floor</span><em>1:100</em></button></li>
+        <li><button type="button"><span data-i18n="plan.uf">Upper floor</span><em>1:100</em></button></li>
+        <li><button type="button"><span data-i18n="plan.sa">Section A–A</span><em>1:100</em></button></li>
+        <li><button type="button"><span data-i18n="plan.sb">Section B–B</span><em>1:100</em></button></li>
+      </ol>
+    </div>
+    <div class="card plan-card" id="planMedia">
+      <img src="assets/img/plan-gf.png" alt="Ground floor plan rendered from the model: kitchen, living, dining, guest WC and stair" class="on">
+      <img src="assets/img/plan-uf.png" alt="Upper floor plan rendered from the model: main bedroom, ensuite, family bath, home office and roof terrace" loading="lazy">
+      <img src="assets/img/sec-aa.png" alt="Cross section through the two storeys and the roof terrace" loading="lazy">
+      <img src="assets/img/sec-bb.png" alt="Long section through the five containers and the stair" loading="lazy">
+      <span class="tag" id="planTag">5 × 40 ft HC · 12 190 × 7 320 mm</span>
+    </div>
+  </div>
+</section>
+
+<!-- EXPLORE: free interactive viewer -->
+<section class="explore" id="explore">
+  <header class="section-head gut">
+    <div><p class="label" data-i18n="ex.k">Live demo · Interactive 3D</p><h2 data-i18n="ex.t">Let them walk around it.</h2></div>
+    <p class="muted" data-i18n="ex.b">This viewer can live on your website. Clients spin it, pull it apart and step inside, floor by floor. It turns browsers into buyers.</p>
+  </header>
+  <div class="inset">
+    <div class="card explore-stage" id="exploreStage">
+      <div class="axo-box" id="exploreBox">
+        <canvas id="exploreAxo" tabindex="0" aria-label="Interactive 3D model of the container house. Drag or use arrow keys to orbit, plus and minus to zoom."></canvas>
+        <div class="axo-labels"></div>
+        <img class="axo-fallback" src="assets/img/axo-iso.png" alt="Isometric line drawing of the container house" hidden>
+        <p class="explore-hint" id="exHint"><span class="hint-hand" aria-hidden="true"></span><span data-i18n="ex.hint">Drag to turn the house</span></p>
+        <div class="zoom-btns">
+          <button type="button" data-zoom="1" aria-label="Zoom in">+</button>
+          <button type="button" data-zoom="-1" aria-label="Zoom out">−</button>
+          <button type="button" data-reset aria-label="Reset view">↺</button>
+          <button type="button" data-fs aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+        </div>
+      </div>
+      <div class="ex-dock">
+        <div class="ex-modes" role="group" aria-label="View">
+          <button type="button" data-mode="whole" aria-pressed="true" data-i18n="ex.m.whole">House</button>
+          <button type="button" data-mode="explode" aria-pressed="false" data-i18n="ex.m.explode">Explode</button>
+          <button type="button" data-mode="inside" aria-pressed="false" data-i18n="ex.m.inside">Inside</button>
+          <button type="button" data-mode="plan" aria-pressed="false" data-i18n="ex.m.plan">Plan</button>
+        </div>
+        <div class="ex-floors" role="group" aria-label="Floor" hidden>
+          <button type="button" data-floor="ground" aria-pressed="true" data-i18n="ex.f.ground">Ground floor</button>
+          <button type="button" data-floor="upper" aria-pressed="false" data-i18n="ex.f.upper">Upper floor</button>
+        </div>
+        <div class="ex-build">
+          <button type="button" class="ex-play" id="exPlay" aria-label="Play the build"><span aria-hidden="true">▶</span></button>
+          <div class="ex-track">
+            <div class="ex-row"><span class="ex-name" id="exName"></span><span class="num" id="exStep">10 / 10</span></div>
+            <input type="range" id="exBuild" min="0" max="10" step="0.01" value="10" aria-label="Build sequence">
+          </div>
+        </div>
+      </div>
+      <!-- build-step names read by the viewer -->
+      <ol hidden>
+        <li data-i18n="step.0">Set out piers</li><li data-i18n="step.1">C1 · north module</li><li data-i18n="step.2">C2 · middle module</li>
+        <li data-i18n="step.3">C3 · south module</li><li data-i18n="step.4">Seam steel + stair</li><li data-i18n="step.5">C4 · upper north</li>
+        <li data-i18n="step.6">C5 · upper middle</li><li data-i18n="step.7">Glazing + doors</li><li data-i18n="step.8">Deck + pergolas</li>
+        <li data-i18n="step.9">Terrace, shade, roof</li>
+      </ol>
+    </div>
+  </div>
+  <div class="ex-foot gut">
+    <p class="muted" data-i18n="ex.foot">Same viewer, your house, on your website.</p>
+    <a class="btn ghost" href="mailto:bzik.david@gmail.com?subject=Interactive%203D%20viewer"><span data-i18n="ex.cta">Get this for your listings</span> <i class="arr">→</i></a>
+  </div>
+</section>
+
+<!-- JOURNEY: one scroll-scrubbed shot. The house assembles in iso, the camera flies down to the garden path,
+     and the walkthrough carries on inside. Frames rendered in Blender (walkthrough/flyin, walkthrough/web_tour_eevee.py). -->
+<section class="journey inset" id="journey">
+  <figure class="card jr-card light" id="jrCard">
+    <img class="jr-still" src="assets/assembly/f_0565.webp?v=2" alt="" width="568" height="1068" loading="lazy">
+    <canvas id="jrCanvas" width="1280" height="720" role="img" aria-label="The container house assembling layer by layer, then the camera flying down to the garden path and walking through the finished house: entry, dining and kitchen, living room, up the stair to the main bedroom, and from the roof down to the garden"></canvas>
+    <div class="jr-copy">
+      <div class="jr-cap on" data-ch="found">
+        <p class="label" data-i18n="asm.k">Assembly · rendered from the model</p>
+        <h2 data-i18n="asm.t">Watch it come together.</h2>
+        <p class="jr-body" data-i18n="asm.b">Five containers, one frame, one roof. Layer by layer, from slab to solar, so buyers see how simple modular really is.</p>
+      </div>
+      <div class="jr-cap" data-ch="mods"><p class="label" data-i18n="asm.k">Assembly · rendered from the model</p><h2 data-i18n="jr.t.mods">Five containers, craned into place.</h2></div>
+      <div class="jr-cap" data-ch="roof"><p class="label" data-i18n="asm.k">Assembly · rendered from the model</p><h2 data-i18n="jr.t.roof">Steel, glass, deck and roof.</h2></div>
+      <div class="jr-cap" data-ch="arrive"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="jr.t.arrive">Built. Now walk up to it.</h2></div>
+      <div class="jr-cap" data-ch="entry"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="tour.2">Entry, dining and kitchen</h2></div>
+      <div class="jr-cap" data-ch="living"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="tour.3">Living room, out to the garden</h2></div>
+      <div class="jr-cap" data-ch="up"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="jr.t.up">Up the stair to the main bedroom</h2></div>
+      <div class="jr-cap" data-ch="garden"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="tour.9">From the roof down to the garden</h2></div>
+    </div>
+    <nav class="jr-rail" aria-label="Chapters">
+      <i class="jr-line" aria-hidden="true"><b id="jrBar"></b></i>
+      <button type="button"><span data-i18n="jr.found">Foundations</span></button>
+      <button type="button"><span data-i18n="jr.mods">Modules</span></button>
+      <button type="button"><span data-i18n="jr.roof">Roof</span></button>
+      <button type="button"><span data-i18n="jr.arrive">Arrive</span></button>
+      <button type="button"><span data-i18n="jr.entry">Entry</span></button>
+      <button type="button"><span data-i18n="jr.living">Living</span></button>
+      <button type="button"><span data-i18n="jr.up">Upstairs</span></button>
+      <button type="button"><span data-i18n="jr.garden">Garden</span></button>
+    </nav>
+    <p class="jr-hint" aria-hidden="true" data-i18n="jr.hint">Scroll to build, then walk in</p>
+  </figure>
+</section>
+
+<!-- FULL RENDER: the payoff after the walkthrough -->
+<section class="full inset" data-theme="dark">
+  <div class="card full-card">
+    <img src="assets/img/dusk-garden-terrace.jpg" alt="The house from the garden at dusk, lights on inside, pergola and deck lit (rendered from the model)" width="2400" height="1600" loading="lazy">
+    <div class="full-copy"><p class="label" data-i18n="full.1k">Dusk on the terrace</p><h2 data-i18n="full.1t">Sell the evening, not the square metres.</h2></div>
+  </div>
+</section>
+
+<!-- MODEL-TRUE: same camera, clay vs finished -->
+<section class="split gut" id="work">
+  <div class="split-copy">
+    <p class="label" data-i18n="brk.k">The standard</p>
+    <h2 data-i18n="brk.t">Model-true.</h2>
+    <p class="muted" data-i18n="brk.b">Every image starts from one dimension-true 3D model. What you sell is exactly what gets built: no surprises at handover, no awkward conversations.</p>
+    <p class="note" data-i18n="brk.note">Same Blender camera, two outputs: gray clay and high fidelity. Drag to compare.</p>
+  </div>
+  <figure class="card mt-split" id="mtSplit" style="--s:50%">
+    <img src="assets/img/clay-01-open-plan.jpg" alt="Open-plan living and dining as a neutral gray clay render" width="1920" height="1280" loading="lazy">
+    <div class="mt-top"><img src="assets/img/hf-01-open-plan.jpg" alt="The same view as a finished photographic image" width="1536" height="1024" loading="lazy"></div>
+    <div class="mt-handle" role="slider" tabindex="0" aria-label="Compare gray clay and high-fidelity image" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span></span></div>
+    <span class="tag l" data-i18n="brk.lw">Gray clay</span>
+    <span class="tag r" data-i18n="brk.hf">High fidelity</span>
+  </figure>
+</section>
+
+<!-- CLAY → FINISHED: scroll wipe -->
+<section class="wipe-sec">
+  <header class="section-head gut">
+    <div><p class="label" data-i18n="wipe.k">06 · From clay to finished</p><h2 data-i18n="wipe.t">From clay to curb appeal.</h2></div>
+    <p class="muted" data-i18n="wipe.b">Materials, light and landscape layered onto the same geometry. Scroll to reveal the finished view.</p>
+  </header>
+  <div class="inset">
+    <div class="card wipe" id="wipe">
+      <img src="assets/img/clay-11-deck-exterior.jpg" alt="Front exterior as a neutral gray clay render" width="1920" height="1280" loading="lazy">
+      <div class="top"><img src="assets/img/hf-11-deck-exterior.jpg" alt="The same front view as a high-fidelity image" width="1536" height="1024" loading="lazy"></div>
+      <div class="bar"></div>
+      <span class="tag l" data-i18n="wipe.clay">Gray clay</span>
+      <span class="tag r" data-i18n="wipe.fin">High fidelity</span>
+    </div>
+  </div>
+</section>
+
+<!-- ROOMS: pinned list, image swaps as you scroll -->
+<section class="rooms" id="rooms">
+  <div class="rooms-stage gut">
+    <header class="section-head"><div><p class="label" data-i18n="rooms.k">08 · Room by room</p><h2 data-i18n="rooms.t">Walk through it before it's built.</h2></div>
+      <p class="muted" data-i18n="rooms.b">True room sizes, real furniture at scale. Every room ready for your listing, brochure and social feed.</p></header>
+    <div class="rooms-grid">
+      <ol class="pick-list rooms-list" id="roomList">
+        <li><button type="button"><span data-i18n="room.1">Entry</span><em>01</em></button></li>
+        <li><button type="button"><span data-i18n="room.2">Open plan</span><em>02</em></button></li>
+        <li><button type="button"><span data-i18n="room.3">Living</span><em>03</em></button></li>
+        <li><button type="button"><span data-i18n="room.4">Dining</span><em>04</em></button></li>
+        <li><button type="button"><span data-i18n="room.5">Kitchen</span><em>05</em></button></li>
+        <li><button type="button"><span data-i18n="room.6">Stair</span><em>06</em></button></li>
+        <li><button type="button"><span data-i18n="room.7">Upper gallery</span><em>07</em></button></li>
+        <li><button type="button"><span data-i18n="room.8">Main bedroom</span><em>08</em></button></li>
+        <li><button type="button"><span data-i18n="room.9">Ensuite</span><em>09</em></button></li>
+        <li><button type="button"><span data-i18n="room.10">Studio</span><em>10</em></button></li>
+        <li><button type="button"><span data-i18n="room.11">Reading corner</span><em>11</em></button></li>
+      </ol>
+      <div class="card room-media" id="roomMedia">
+        <img src="assets/img/hf-05-entry.jpg" alt="Entry and reading corner" class="on" loading="lazy">
+        <img src="assets/img/hf-01-open-plan.jpg" alt="Open-plan ground floor" loading="lazy">
+        <img src="assets/img/hf-02-living.jpg" alt="Living room toward the garden" loading="lazy">
+        <img src="assets/img/hf-03-dining.jpg" alt="Dining and kitchen" loading="lazy">
+        <img src="assets/img/hf-04-kitchen.jpg" alt="Kitchen run and window" loading="lazy">
+        <img src="assets/img/hf-06-stair.jpg" alt="Stair with wall lighting" loading="lazy">
+        <img src="assets/img/hf-10-gallery.jpg" alt="Upper gallery and landing" loading="lazy">
+        <img src="assets/img/hf-07-main-bedroom.jpg" alt="Main bedroom with west glass" loading="lazy">
+        <img src="assets/img/hf-09-ensuite.jpg" alt="Ensuite with checker floor" loading="lazy">
+        <img src="assets/img/hf-08-guest-studio.jpg" alt="Guest bedroom and studio" loading="lazy">
+        <img src="assets/img/hf-13-reading-people.jpg" alt="Reading corner by the glass" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIFESTYLE -->
+<section class="life gut" id="life">
+  <header class="section-head"><div><p class="label" data-i18n="gal.k">07 · Lifestyle</p><h2 data-i18n="gal.t">Show the life, not just the layout.</h2></div>
+    <p class="muted" data-i18n="gal.b">Lived-in scenes from model cameras at eye height. The rooms buyers fall for are the rooms they get.</p></header>
+  <div class="grid-4">
+    <figure class="tile"><div class="card"><img src="assets/img/hf-14-living-people.jpg" alt="Living room in use, afternoon light" loading="lazy"></div><figcaption data-i18n="gal.1">Living, lived in</figcaption></figure>
+    <figure class="tile"><div class="card"><img src="assets/img/hf-15-dining-people.jpg" alt="Coffee at the dining table" loading="lazy"></div><figcaption data-i18n="gal.3">Dining</figcaption></figure>
+    <figure class="tile"><div class="card"><img src="assets/img/hf-06-stair.jpg" alt="Return stair and the red container doors" loading="lazy"></div><figcaption data-i18n="gal.4">Return stair</figcaption></figure>
+    <figure class="tile"><div class="card"><img src="assets/img/hf-07-main-bedroom.jpg" alt="Main bedroom with west glass" loading="lazy"></div><figcaption data-i18n="gal.6">Main bedroom</figcaption></figure>
+  </div>
+</section>
+
+<!-- SCENES: looping isometric dioramas, one per moment of the day. A card without a video is a slot still in production. -->
+<section class="scenes gut" id="scenes">
+  <header class="section-head"><div><p class="label" data-i18n="sc.k">Scenes · AI-animated isometrics</p><h2 data-i18n="sc.t">A day in the house, in miniature.</h2></div>
+    <p class="muted" data-i18n="sc.b">Isometric slices of the house with people in them, on a loop. Made for your feed as much as your website.</p></header>
+  <div class="scenes-row" id="scenesRow">
+    <figure class="scene"><div class="card"><video src="assets/video/scene-terrace.mp4" poster="assets/video/scene-terrace-poster.jpg" muted loop playsinline preload="none" data-inview aria-label="Isometric scene: a couple with coffee on the upper terrace"></video></div>
+      <figcaption><span class="num">07:40</span><span data-i18n="sc.1">Coffee on the upper terrace</span></figcaption></figure>
+    <figure class="scene soon"><div class="card"><span data-i18n="sc.soon">In production</span></div>
+      <figcaption><span class="num">13:00</span><span data-i18n="sc.2">Lunch in the kitchen</span></figcaption></figure>
+    <figure class="scene soon"><div class="card"><span data-i18n="sc.soon">In production</span></div>
+      <figcaption><span class="num">19:30</span><span data-i18n="sc.3">Dinner on the deck at dusk</span></figcaption></figure>
+    <figure class="scene soon"><div class="card"><span data-i18n="sc.soon">In production</span></div>
+      <figcaption><span class="num">22:15</span><span data-i18n="sc.4">Reading corner, lights low</span></figcaption></figure>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="gut block" id="for">
+  <header class="section-head"><div><p class="label" data-i18n="for.k">Who it's for</p><h2 data-i18n="for.t">Made for the people who sell houses.</h2></div></header>
+  <div class="cols-3">
+    <div data-reveal><h3 data-i18n="for.1t">Distributors and manufacturers</h3><ul>
+      <li data-i18n="for.1a">A catalogue that sells every model and layout</li>
+      <li data-i18n="for.1b">An interactive 3D showroom on your website</li>
+      <li data-i18n="for.1c">Assembly films that make modular feel simple</li></ul></div>
+    <div data-reveal><h3 data-i18n="for.2t">Contractors and builders</h3><ul>
+      <li data-i18n="for.2a">Win approvals faster with clear, accurate visuals</li>
+      <li data-i18n="for.2b">Drawings, sections and isometrics that match the model</li>
+      <li data-i18n="for.2c">Fewer change orders: clients sign off on what they see</li></ul></div>
+    <div data-reveal><h3 data-i18n="for.3t">Real estate and developers</h3><ul>
+      <li data-i18n="for.3a">Pre-sell off-plan with photoreal day and dusk images</li>
+      <li data-i18n="for.3b">Furnished interiors that justify the price</li>
+      <li data-i18n="for.3c">Walkthrough films for listings and social</li></ul></div>
+  </div>
+</section>
+
+<!-- OUTPUTS -->
+<section class="gut block" id="outputs">
+  <header class="section-head"><div><p class="label" data-i18n="out.k">Deliverables</p><h2 data-i18n="out.t">Every asset your sales team needs.</h2></div>
+    <p class="muted" data-i18n="out.b">Order one, or the whole set. All cut from the same model, so they always agree.</p></header>
+  <div class="outs">
+    <div data-reveal><figure class="card out-ex draw"><img src="assets/img/plan-gf.png" alt="Example: ground floor plan drawn from the model" loading="lazy"></figure><b>01</b><h3 data-i18n="out.1t">Drawings</h3><p data-i18n="out.1b">Plans, elevations, sections and module assembly, to scale and ready for approvals.</p><span>PDF · A3 / A1</span></div>
+    <div data-reveal><figure class="card out-ex"><img src="assets/img/ed-l02-south-elevation.jpg" alt="Example: the south elevation in late-afternoon light" loading="lazy"></figure><b>02</b><h3 data-i18n="out.2t">Exterior images</h3><p data-i18n="out.2b">Day, golden hour and dusk, on your site or a neutral one.</p><span>JPG / PNG · up to 4K</span></div>
+    <div data-reveal><figure class="card out-ex"><img src="assets/img/hf-02-living.jpg" alt="Example: the furnished living room toward the garden" loading="lazy"></figure><b>03</b><h3 data-i18n="out.3t">Interior images</h3><p data-i18n="out.3b">Furnished rooms at true scale, styled to your buyer.</p><span>JPG / PNG · up to 4K</span></div>
+    <div data-reveal><figure class="card out-ex draw"><a href="#explore" aria-label="Open the interactive 3D viewer"><img src="assets/img/axo-exploded.png" alt="Example: exploded view from the interactive 3D model" loading="lazy"></a></figure><b>04</b><h3 data-i18n="out.4t">Interactive 3D</h3><p data-i18n="out.4b">The live model above, branded for your website and sales meetings.</p><span>Web · embeddable</span></div>
+    <div data-reveal><figure class="card out-ex"><video src="assets/video/assembly-photoreal.mp4" poster="assets/video/assembly-poster.jpg" muted loop playsinline preload="none" data-inview aria-label="Example: photoreal film of the house assembling, slab to solar roof"></video></figure><b>05</b><h3 data-i18n="out.5t">Assembly film</h3><p data-i18n="out.5b">Piers to roof in one film: the clearest way to sell modular.</p><span>MP4 · 16:9 + 9:16</span></div>
+    <div data-reveal><figure class="card out-ex"><img src="assets/img/hf-10-gallery.jpg" alt="Example: eye-level view along the upper gallery" loading="lazy"></figure><b>06</b><h3 data-i18n="out.6t">Walkthrough film</h3><p data-i18n="out.6b">An eye-level camera path through every room.</p><span>MP4 · Full HD / 4K · 16:9 + 9:16</span></div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="gut block how-sec" id="how">
+  <header class="how-head"><p class="label" data-i18n="how.k">How it works</p><h2 data-i18n="how.t">From plans to launch in four steps.</h2></header>
+  <ol class="how" id="howSteps">
+    <li><b>01</b><div><h3 data-i18n="how.1t">Send your plans</h3><p data-i18n="how.1b">PDF, DWG or a dimensioned sketch. That's all we need to start.</p></div></li>
+    <li><b>02</b><div><h3 data-i18n="how.2t">Fixed scope and quote</h3><p data-i18n="how.2b">You choose the package; we fix the price and the dates.</p></div></li>
+    <li><b>03</b><div><h3 data-i18n="how.3t">Approve the model</h3><p data-i18n="how.3b">Check every dimension before a single image is made.</p></div></li>
+    <li><b>04</b><div><h3 data-i18n="how.4t">Launch</h3><p data-i18n="how.4b">Images, films and web files, sized for every channel.</p></div></li>
+  </ol>
+</section>
+
+<!-- PACKAGES -->
+<section class="gut block" id="packages">
+  <header class="section-head"><div><p class="label" data-i18n="pk.k">Packages</p><h2 data-i18n="pk.t">Choose your launch.</h2></div>
+    <p class="muted" data-i18n="pk.b">Three ways to start. Every package is built on one model, so you can upgrade any time without paying for the model twice.</p></header>
+  <div class="pkgs">
+    <article class="pkg" data-reveal>
+      <p class="pkg-tier">01</p><h3 data-i18n="pk.1n">Listing</h3><p class="muted" data-i18n="pk.1f">For one house, one listing.</p>
+      <ul><li data-i18n="pk.1a">Dimension-true 3D model from your plans</li><li data-i18n="pk.1b">4 exterior images, day and dusk</li><li data-i18n="pk.1c">4 furnished interior images</li><li data-i18n="pk.1d">Social crops: 1:1, 4:5 and 9:16</li></ul>
+      <a class="btn ghost" href="mailto:bzik.david@gmail.com?subject=Listing%20package"><span data-i18n="pk.cta">Request a quote</span> <i class="arr">→</i></a>
+    </article>
+    <article class="pkg feat" data-reveal>
+      <p class="pkg-tier">02 <span class="pkg-badge" data-i18n="pk.badge">Most chosen</span></p><h3 data-i18n="pk.2n">Launch</h3><p class="muted" data-i18n="pk.2f">For a new model or a project launch.</p>
+      <ul><li data-i18n="pk.2a">Everything in Listing</li><li data-i18n="pk.2b">10 interiors, room by room</li><li data-i18n="pk.2c">Walkthrough film, 16:9 and 9:16</li><li data-i18n="pk.2d">Assembly film, piers to roof</li><li data-i18n="pk.2e">Coordinated drawing set</li></ul>
+      <a class="btn" href="mailto:bzik.david@gmail.com?subject=Launch%20package"><span data-i18n="pk.cta">Request a quote</span> <i class="arr">→</i></a>
+    </article>
+    <article class="pkg" data-reveal>
+      <p class="pkg-tier">03</p><h3 data-i18n="pk.3n">Showroom</h3><p class="muted" data-i18n="pk.3f">For distributors selling a whole range.</p>
+      <ul><li data-i18n="pk.3a">Everything in Launch</li><li data-i18n="pk.3b">Interactive 3D viewer, branded for your website</li><li data-i18n="pk.3c">Lifestyle scenes and clay-to-reality comparisons</li><li data-i18n="pk.3d">Layout options across your model range</li></ul>
+      <a class="btn ghost" href="mailto:bzik.david@gmail.com?subject=Showroom%20package"><span data-i18n="pk.cta">Request a quote</span> <i class="arr">→</i></a>
+    </article>
+  </div>
+  <p class="note" data-i18n="pk.note">Fixed scope and dates, agreed before we start. Need something different? Every package can be tailored.</p>
+</section>
+</main>
+
+<!-- CLOSER -->
+<section class="closer inset" id="contact" data-theme="dark">
+  <div class="card closer-card">
+    <img src="assets/img/ed-l03-east-deck.jpg" alt="The east deck and upper terrace among the trees (AI-assisted concept image)" width="1536" height="1024" loading="lazy">
+    <div class="closer-copy">
+      <p class="label" data-i18n="ct.k">Let's build your launch</p>
+      <h2 data-i18n="ct.t">Your next house can sell itself.</h2>
+      <p class="closer-text" data-i18n="ct.b">Send the plans today. You'll get a fixed scope, a quote and a model to approve, then every image, film and 3D view your sales team needs.</p>
+      <div class="contact-row">
+        <a class="btn" href="mailto:bzik.david@gmail.com?subject=Container%20house%20project"><span data-i18n="cta.send">Book a project call</span> <i class="arr">→</i></a>
+        <a class="mail" href="mailto:bzik.david@gmail.com">bzik.david@gmail.com</a>
+      </div>
+      <ul class="trust"><li data-i18n="ct.t1">Built from your drawings</li><li data-i18n="ct.t2">One model, every output</li><li data-i18n="ct.t3">Fixed scope and dates</li></ul>
+    </div>
+  </div>
+</section>
+
+<footer class="foot inset">
+  <div class="foot-card">
+    <a class="logo" href="#top" aria-label="BZIK"></a>
+    <nav><a href="#plan" data-i18n="nav.plan">Plan</a><a href="#explore" data-i18n="nav.explore">Live 3D</a><a href="#work" data-i18n="nav.work">Work</a><a href="#packages" data-i18n="nav.outputs">Packages</a></nav>
+    <p class="foot-note">David Budzik · BZIK · © 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base href="../">
+<title>Axo fallback renderer</title>
+<!-- Dev tool: renders one axo state full-window for headless screenshots. ?state=plan|iso|exploded -->
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>html,body{margin:0;height:100%;background:#F3F3F0}.axo-box{position:fixed;inset:0}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+<div class="axo-box"><canvas id="c"></canvas><div class="axo-labels"></div></div>
+<script type="module">
+import { createAxo } from './js/axo.js?v=8';
+const s = new URLSearchParams(location.search).get('state') || 'iso';
+const a = createAxo(document.getElementById('c'));
+const states = {
+  plan:     { build: 4,  extrude: 0, view: 0, explode: 0 },
+  iso:      { build: 10, extrude: 1, view: 1, explode: 0 },
+  exploded: { build: 10, extrude: 1, view: 1, explode: 1 },
+};
+const st = states[s];
+a.setBuild(st.build); a.setExtrude(st.extrude); a.setView(st.view); a.setExplode(st.explode); a.snap();
+</script>
+</body>
+</html>
