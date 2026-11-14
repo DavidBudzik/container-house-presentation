@@ -1,6 +1,9 @@
-import { setLang, initialLang } from './i18n.js?v=17';
+import { setLang, initialLang } from './i18n.js?v=25';
 
-const MODEL = 'assets/models/house-real.glb?v=2';   // exported from Container House.blend with its materials (web-model/export_glb.py)
+// exported from Redesign\Container_House_Redesigned.blend by web-model/export_glb_viewer_v2.py: house only, no garden and
+// no plants, every material as the flat colour Cycles measures for it. Kept next to it: house-redesigned.glb (the first
+// export of the same model, web-model/export_glb_redesign.py) and house-real.glb (Container House.blend, export_glb.py)
+const MODEL = 'assets/models/house-redesigned-v2.glb?v=1';
 
 function webglOK() {
   try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); }
@@ -19,9 +22,9 @@ async function boot() {
   let axo = null, explore = null;
   if (webglOK()) {
     try {
-      const { createAxo } = await import('./axo.js?v=25');
+      const { createAxo } = await import('./axo.js?v=29');
       axo = createAxo(exploreCanvas, { mode: 'story', fit: 1.2, model: MODEL, sheets: false, look: 'real' });
-      explore = (await import('./explore.js?v=6')).initExplore(axo);
+      explore = (await import('./explore.js?v=7')).initExplore(axo);
     } catch (e) {
       console.warn('3D view unavailable, showing a static drawing.', e);
       axo = null; showFallback(exploreCanvas);
@@ -31,10 +34,10 @@ async function boot() {
 
   let refresh = () => {};
   if (window.gsap && window.ScrollTrigger) {
-    try { refresh = (await import('./scroll.js?v=15')).initScroll(); }
+    try { refresh = (await import('./scroll.js?v=16')).initScroll(); }
     catch (e) { console.warn('Scroll animation unavailable.', e); document.documentElement.classList.add('no-motion'); }
   } else document.documentElement.classList.add('no-motion');
-  await (await import('./journey.js?v=4')).initJourney();   // async (fetches its frame lists): wait so its pin is sorted below
+  await (await import('./journey.js?v=15')).initJourney();   // async (fetches its frame lists): wait so its pin is sorted below
   // Pins created after scroll.js (the journey) sit higher on the page: order triggers by position so earlier pins
   // add their spacer height before later ones measure their start.
   // Sorted by document order, not by start: the starts are still stale at this point.

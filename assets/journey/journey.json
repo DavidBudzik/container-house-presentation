@@ -1,0 +1,115 @@
+{
+ "frames": 1395,
+ "assembly_end": 280,
+ "resolution": [
+  1280,
+  720
+ ],
+ "chapters": [
+  {
+   "key": "foundation",
+   "title": "Foundations",
+   "frame": 1,
+   "end": 15,
+   "rest": 1
+  },
+  {
+   "key": "ground",
+   "title": "Ground-floor modules",
+   "frame": 16,
+   "end": 135,
+   "rest": 16
+  },
+  {
+   "key": "upper_modules",
+   "title": "Upper modules",
+   "frame": 136,
+   "end": 213,
+   "rest": 136
+  },
+  {
+   "key": "envelope",
+   "title": "Roof, glazing and decks",
+   "frame": 214,
+   "end": 279,
+   "rest": 214
+  },
+  {
+   "key": "front",
+   "title": "Front view",
+   "frame": 280,
+   "end": 419,
+   "rest": 287
+  },
+  {
+   "key": "entry",
+   "title": "Entrance",
+   "frame": 420,
+   "end": 519,
+   "rest": 423
+  },
+  {
+   "key": "living",
+   "title": "Living",
+   "frame": 520,
+   "end": 612,
+   "rest": 525
+  },
+  {
+   "key": "kitchen",
+   "title": "Kitchen",
+   "frame": 613,
+   "end": 649,
+   "rest": 613
+  },
+  {
+   "key": "stair",
+   "title": "Stair",
+   "frame": 650,
+   "end": 786,
+   "rest": 650
+  },
+  {
+   "key": "upper",
+   "title": "Upper floor",
+   "frame": 787,
+   "end": 815,
+   "rest": 789
+  },
+  {
+   "key": "office",
+   "title": "Home office",
+   "frame": 816,
+   "end": 943,
+   "rest": 820
+  },
+  {
+   "key": "terrace",
+   "title": "Terrace",
+   "frame": 944,
+   "end": 1046,
+   "rest": 948
+  },
+  {
+   "key": "bedroom",
+   "title": "Main bedroom",
+   "frame": 1047,
+   "end": 1193,
+   "rest": 1047
+  },
+  {
+   "key": "leaving",
+   "title": "Lift-off",
+   "frame": 1194,
+   "end": 1382,
+   "rest": 1194
+  },
+  {
+   "key": "overview",
+   "title": "Overview",
+   "frame": 1383,
+   "end": 1395,
+   "rest": 1389
+  }
+ ]
+}

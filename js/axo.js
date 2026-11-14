@@ -27,8 +27,8 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
   // Soft key light so members read as solids: top ~ base colour, lit side a little darker, shaded side darker still.
   const real = look === 'real';
   if (real) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; }
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xc9c2b6, real ? .55 : 1.55));
-  { const sun = new THREE.DirectionalLight(0xfff4e6, real ? 2.2 : 1.05); sun.position.set(.5, 1, .35); scene.add(sun); }
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xc9c2b6, real ? 1 : 1.55));      // real: enough fill that walls turned away from the sun stay light
+  { const sun = new THREE.DirectionalLight(0xfff4e6, real ? 2 : 1.05); sun.position.set(.5, 1, .35); scene.add(sun); }
   const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, -200, 400);
   const spin = new THREE.Group(); scene.add(spin);
   const root = new THREE.Group(); spin.add(root);
@@ -314,6 +314,14 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
     return hull;
   }
 
+  // The viewer shows the house without plants: potted plants and pots, vase branches, ivy planters and their rails.
+  const PLANT = /^(PLANT_BQ_|POT_BQ_|bq_Plant_|Vase_Branch|CP_Ivy_Planter_|CP_Lush_Ivy_|CP_\w*Ivy_Training_Rail)/i;
+  const isPlant = n => { for (; n; n = n.parent) if (PLANT.test(n.name)) return true; return false; };
+  // How a part meets the plan cut: 'w' wall build-up (its layers close into one band), 'g' glass, 'o' an object with its own outline.
+  const capClass = (kind, name) => kind === 'glass' ? 'g'
+    : kind === 'shell' || kind === 'accent' || (kind === 'interior' && !/leaf|door/i.test(name)) ? 'w' : 'o';
+  const isGlass = (kind, m) => kind === 'glass' || ((m.transmission > 0 || /glass/i.test(m.name)) && !/_PV|Mirror|Screen|Diffuser/i.test(m.name));
+
   async function loadModel(url) {
     const [{ GLTFLoader }, { DRACOLoader }, { mergeGeometries, mergeVertices }] = await Promise.all([
       import('three/addons/loaders/GLTFLoader.js'), import('three/addons/loaders/DRACOLoader.js'),
@@ -325,7 +333,7 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
     gltf.scene.updateMatrixWorld(true);
     const buckets = new Map();                                   // step|level|shell -> kind -> {faces[], edges[]}
     gltf.scene.traverse(n => {
-      if (!n.isMesh) return;
+      if (!n.isMesh || isPlant(n)) return;
       let a = n; while (a && a.userData.web_step === undefined) a = a.parent;          // instance children carry no extras
       const x = a ? a.userData : {}, step = x.web_step ?? 4, level = x.web_level ?? 0;
       const kind = /Louver|Shade|Pergola|Timber/i.test((a || n).name) && x.web_kind !== 'steel' ? 'timber' : (x.web_kind || 'interior');
@@ -372,7 +380,7 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
     applyLayers(); dirty = true; kick();
   }
 
-  // Real look: the GLB carries the Blender materials (web-model/export_glb.py). Same step/level/kind buckets as the
+  // Real look: the GLB carries the Blender materials as the flat colours Cycles measures (web-model/export_glb_viewer_v2.py). Same step/level/kind buckets as the
   // drawing, merged per material so draw calls stay low; every bucket gets its own material copies so pieces fade apart.
   async function loadModelReal(url) {
     const [{ GLTFLoader }, { DRACOLoader }, { mergeGeometries }, { RoomEnvironment }] = await Promise.all([
@@ -387,7 +395,7 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
     gltf.scene.updateMatrixWorld(true);
     const buckets = new Map();                                   // step|level|shell -> material -> {kind, geoms[]}
     gltf.scene.traverse(n => {
-      if (!n.isMesh) return;
+      if (!n.isMesh || isPlant(n)) return;
       let a = n; while (a && a.userData.web_step === undefined) a = a.parent;
       const x = a ? a.userData : {}, step = x.web_step ?? 4, level = x.web_level ?? 0;
       const kind = /Louver|Shade|Pergola|Timber/i.test((a || n).name) && x.web_kind !== 'steel' ? 'timber' : (x.web_kind || 'interior');
@@ -398,8 +406,8 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
       if (!g.attributes.uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
       const ng = g.index ? g.toNonIndexed() : g;
       const b = buckets.get(key) || new Map(); buckets.set(key, b);
-      const mk = `${n.material.uuid}|${kind}`;
-      const e = b.get(mk) || { kind, mat: n.material, geoms: [] }; b.set(mk, e); e.geoms.push(ng);
+      const glassy = isGlass(kind, n.material), cap = glassy ? 'g' : capClass(kind, (a || n).name), mk = `${n.material.uuid}|${kind}|${cap}`;
+      const e = b.get(mk) || { kind, cap, glassy, mat: n.material, geoms: [] }; b.set(mk, e); e.geoms.push(ng);
     });
     pieces.forEach(p => { root.remove(p.obj); p.el?.remove(); });
     pieces.length = 0;
@@ -407,14 +415,16 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
     for (const [key, mats] of buckets) {
       const [step, level, shell] = key.split('|').map(Number);
       const grp = new THREE.Group();
-      for (const { kind, mat, geoms } of mats.values()) {
+      for (const { kind, cap, glassy, mat, geoms } of mats.values()) {
         let m = mat.clone();
-        if (kind === 'glass' || m.transmission > 0 || /glass/i.test(m.name)) {
-          m = new THREE.MeshStandardMaterial({ color: 0xBFD3DA, roughness: .05, metalness: .1, opacity: .28 });
-        }
+        // only 'uv' survives the merge above: textures the GLB maps to a second UV set (uv1) would not compile
+        for (const t of Object.keys(m))
+          if (m[t] && m[t].isTexture && m[t].channel) { m[t] = m[t].clone(); m[t].channel = 0; }
+        if (glassy) m = new THREE.MeshStandardMaterial({ color: 0xBFD3DA, roughness: .05, metalness: .1, opacity: .28 });
+        else if (m.roughness !== undefined) m.roughness = Math.max(m.roughness, .42);     // a diagram, not a showroom: no mirror finishes
         m.transparent = true; m.polygonOffset = true; m.polygonOffsetFactor = 1; m.polygonOffsetUnits = 1;
         if (m.opacity === 1 && m.transmission > 0) m.transmission = 0;
-        const mesh = new THREE.Mesh(mergeGeometries(geoms), m); mesh.userData.kind = kind; grp.add(mesh);
+        const mesh = new THREE.Mesh(mergeGeometries(geoms), m); mesh.userData.kind = kind; mesh.userData.cap = cap; grp.add(mesh);
       }
       const box = new THREE.Box3().setFromObject(grp);
       const type = step === 0 ? 'grow' : step === 7 ? 'fade' : 'drop';
@@ -435,90 +445,238 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
   const layerOff = new Set();
   function applyLayers() { root.traverse(n => { if (n.userData.kind) n.visible = !layerOff.has(n.userData.kind); }); }
 
-  /* ---------- cut edges: outline where the plan cut or section plane slices the model ---------- */
-  let cutLines = null, cutKey = '', fat = null, cutBusy = false;
+  /* ---------- cut caps: a closed top with a black edge wherever the plan cut slices the model ---------- */
+  // The cut is rasterised at 1 cm into two masks: walls (container skin, cladding and lining, with the cavities between
+  // those layers closed up) and single objects (cabinets, door leaves, curtains); glass goes in as a band. Each mask
+  // becomes a distance field, and one plane at the cut height draws fill and outline from that texture. Nothing
+  // changes while the view orbits: the cap is rebuilt only when the cut itself changes (height, levels, layers, build),
+  // and for the state the viewer is easing towards, so it is ready by the time the cut arrives.
+  const CAP = { px: .01, close: 6, join: 1, glass: .016, line: .024, minPx: 2.3, range: .08,      // close / join: gaps closed, in pixels each way
+                fill: 0xF3F1EC, glassCol: 0xC6D8DE, ink: 0x131313 };                              // metres; colours of the cut face
+  const CUT_TOL = { cut: .01, section: .01, explode: .004, build: .01, extrude: .01, m0: .04, m1: .04, m2: .04 };   // how near the eased state must be for the cap to show
+  let cap = null, cutLines = null, cutKey = '', fat = null, cutBusy = false;
+  const tick = () => new Promise(r => setTimeout(r));
+  const q9 = new Float64Array(9), h4 = [0, 0, 0, 0];
+  function sliceY(out, pos, M, y) {                 // triangle soup against the plane y: pushes x0, z0, x1, z1 per crossing
+    const e = M.elements, n = pos.count, A = pos.array, direct = !pos.isInterleavedBufferAttribute && !pos.normalized && pos.itemSize === 3;
+    for (let i = 0; i < n; i += 3) {
+      for (let k = 0; k < 3; k++) {
+        const j = (i + k) * 3, x = direct ? A[j] : pos.getX(i + k), v = direct ? A[j + 1] : pos.getY(i + k), z = direct ? A[j + 2] : pos.getZ(i + k), o = k * 3;
+        q9[o] = e[0] * x + e[4] * v + e[8] * z + e[12]; q9[o + 1] = e[1] * x + e[5] * v + e[9] * z + e[13] - y; q9[o + 2] = e[2] * x + e[6] * v + e[10] * z + e[14];
+      }
+      if ((q9[1] < 0) === (q9[4] < 0) && (q9[4] < 0) === (q9[7] < 0)) continue;
+      let m = 0;
+      for (let k = 0; k < 3; k++) {
+        const a = k * 3, b = (k + 1) % 3 * 3, d0 = q9[a + 1], d1 = q9[b + 1];
+        if ((d0 < 0) === (d1 < 0)) continue;
+        const t = d0 / (d0 - d1); h4[m++] = q9[a] + (q9[b] - q9[a]) * t; h4[m++] = q9[a + 2] + (q9[b + 2] - q9[a + 2]) * t;
+      }
+      if (m === 4) out.push(h4[0], h4[1], h4[2], h4[3]);
+    }
+  }
+  function chain(segs, tol = .002) {               // join segments end to end: closed loops and open runs, each [x, z, x, z, ...]
+    const cell = v => Math.floor(v / tol), key = (ix, iz) => (ix + 32768) * 65536 + (iz + 32768);
+    const ends = new Map(), n = segs.length / 4, used = new Uint8Array(n), t2 = tol * tol;
+    const put = (x, z, i) => { const k = key(cell(x), cell(z)), l = ends.get(k); if (l) l.push(i); else ends.set(k, [i]); };
+    for (let i = 0; i < n; i++) { put(segs[i * 4], segs[i * 4 + 1], i); put(segs[i * 4 + 2], segs[i * 4 + 3], i); }
+    const d2 = (o, x, z) => (segs[o] - x) ** 2 + (segs[o + 1] - z) ** 2;
+    const next = (x, z) => {                       // an unused segment with an end within tol of (x, z), or -1
+      const cx = cell(x), cz = cell(z); let best = -1, bd = t2;
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+        const l = ends.get(key(cx + dx, cz + dz)); if (!l) continue;
+        for (const i of l) { if (used[i]) continue; const d = Math.min(d2(i * 4, x, z), d2(i * 4 + 2, x, z)); if (d <= bd) { bd = d; best = i; } }
+      }
+      return best;
+    };
+    const closed = [], open = [];
+    for (let i = 0; i < n; i++) {
+      if (used[i]) continue; used[i] = 1;
+      let pts = [segs[i * 4], segs[i * 4 + 1], segs[i * 4 + 2], segs[i * 4 + 3]], loop = false;
+      for (let pass = 0; pass < 2 && !loop; pass++) {
+        for (;;) {
+          const x = pts[pts.length - 2], z = pts[pts.length - 1], j = next(x, z);
+          if (j < 0) break;
+          used[j] = 1; const o = j * 4, first = d2(o, x, z) <= d2(o + 2, x, z);
+          pts.push(first ? segs[o + 2] : segs[o], first ? segs[o + 3] : segs[o + 1]);
+          if (pts.length > 6 && (pts[pts.length - 2] - pts[0]) ** 2 + (pts[pts.length - 1] - pts[1]) ** 2 <= t2) { loop = true; break; }
+        }
+        if (!loop) { const r = []; for (let k = pts.length - 2; k >= 0; k -= 2) r.push(pts[k], pts[k + 1]); pts = r; }   // then grow the other end
+      }
+      (loop ? closed : open).push(pts);
+    }
+    return { closed, open };
+  }
+  function nestGroups(loops) {                     // even-odd by nesting: every solid loop with the holes directly inside it
+    const L = loops.map(p => {
+      let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9, a = 0;
+      for (let i = 0, j = p.length - 2; i < p.length; j = i, i += 2) {
+        a += p[j] * p[i + 1] - p[i] * p[j + 1];
+        if (p[i] < x0) x0 = p[i]; if (p[i] > x1) x1 = p[i]; if (p[i + 1] < z0) z0 = p[i + 1]; if (p[i + 1] > z1) z1 = p[i + 1];
+      }
+      return { p, x0, x1, z0, z1, area: Math.abs(a) / 2, depth: 0, holes: [] };
+    }).sort((a, b) => b.area - a.area);
+    const inside = (x, z, p) => { let c = false;
+      for (let i = 0, j = p.length - 2; i < p.length; j = i, i += 2)
+        if ((p[i + 1] > z) !== (p[j + 1] > z) && x < (p[j] - p[i]) * (z - p[i + 1]) / (p[j + 1] - p[i + 1]) + p[i]) c = !c;
+      return c; };
+    for (let i = 1; i < L.length; i++) {
+      const c = L[i], x = c.p[0], z = c.p[1];
+      for (let j = i - 1; j >= 0; j--) {             // larger loops only, the smallest of them first
+        const o = L[j];
+        if (x < o.x0 || x > o.x1 || z < o.z0 || z > o.z1 || !inside(x, z, o.p)) continue;
+        c.depth = o.depth + 1; if (c.depth % 2) o.holes.push(c.p); break;
+      }
+    }
+    return L.filter(l => l.depth % 2 === 0).map(l => [l.p, ...l.holes]);
+  }
+  function edt(mask, w, h) {                       // exact distance (px) from each pixel to the nearest pixel outside the mask
+    const INF = 1e12, n = Math.max(w, h), f = new Float64Array(n), d = new Float64Array(n), v = new Int32Array(n), z = new Float64Array(n + 1);
+    const out = new Float32Array(w * h);
+    const line = len => {                          // 1D squared-distance transform (lower envelope of parabolas)
+      let k = 0; v[0] = 0; z[0] = -INF; z[1] = INF;
+      for (let q = 1; q < len; q++) {
+        let s;
+        for (;;) { const p = v[k]; s = ((f[q] + q * q) - (f[p] + p * p)) / (2 * q - 2 * p); if (s <= z[k] && k > 0) k--; else break; }
+        k++; v[k] = q; z[k] = s; z[k + 1] = INF;
+      }
+      k = 0;
+      for (let q = 0; q < len; q++) { while (z[k + 1] < q) k++; const p = v[k]; d[q] = (q - p) * (q - p) + f[p]; }
+    };
+    for (let i = 0; i < w * h; i++) out[i] = mask[i] ? INF : 0;
+    for (let x = 0; x < w; x++) { for (let y = 0; y < h; y++) f[y] = out[y * w + x]; line(h); for (let y = 0; y < h; y++) out[y * w + x] = d[y]; }
+    for (let y = 0; y < h; y++) { const o = y * w; for (let x = 0; x < w; x++) f[x] = out[o + x]; line(w); for (let x = 0; x < w; x++) out[o + x] = Math.sqrt(d[x]); }
+    return out;
+  }
+  function boxMorph(m, w, h, r, grow) {            // square (2r + 1) dilation or erosion of a 0/1 mask, in place: corners stay sharp
+    const t = new Uint8Array(m.length), need = grow ? 1 : 2 * r + 1;
+    for (let y = 0; y < h; y++) {
+      const o = y * w; let c = 0;
+      for (let x = 0; x < Math.min(r, w); x++) c += m[o + x];
+      for (let x = 0; x < w; x++) { if (x + r < w) c += m[o + x + r]; if (x - r - 1 >= 0) c -= m[o + x - r - 1]; t[o + x] = c >= need ? 1 : 0; }
+    }
+    for (let x = 0; x < w; x++) {
+      let c = 0;
+      for (let y = 0; y < Math.min(r, h); y++) c += t[y * w + x];
+      for (let y = 0; y < h; y++) { if (y + r < h) c += t[(y + r) * w + x]; if (y - r - 1 >= 0) c -= t[(y - r - 1) * w + x]; m[y * w + x] = c >= need ? 1 : 0; }
+    }
+  }
+  function capMaterial(tex) {
+    return new THREE.ShaderMaterial({
+      transparent: true, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1, extensions: { derivatives: true },
+      uniforms: { map: { value: tex }, fill: { value: new THREE.Color(CAP.fill) }, glass: { value: new THREE.Color(CAP.glassCol) }, ink: { value: new THREE.Color(CAP.ink) },
+                  range: { value: CAP.range }, line: { value: CAP.line }, minPx: { value: CAP.minPx }, opacity: { value: 0 } },
+      vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
+      fragmentShader: `uniform sampler2D map; uniform vec3 fill, glass, ink; uniform float range, line, minPx, opacity; varying vec2 vUv;
+        void main() {
+          vec4 t = texture2D(map, vUv);
+          float w = (t.r * 2. - 1.) * range, o = (t.g * 2. - 1.) * range;        // metres inside the wall band / inside an object
+          float aw = max(fwidth(w), 1e-5), ao = max(fwidth(o), 1e-5);
+          float cw = clamp(w / aw + .5, 0., 1.), co = clamp(o / ao + .5, 0., 1.);   // coverage
+          float lw = max(line, minPx * aw), lo = max(line, minPx * ao);            // the black edge: 24 mm wide, never thinner than about two screen pixels
+          float ew = 1. - clamp((w - lw) / aw + .5, 0., 1.), eo = 1. - clamp((o - lo) / ao + .5, 0., 1.);
+          float solid = max(cw, co), dark = max(eo * co, ew * cw * (1. - co));     // an object keeps its own outline against a wall
+          vec3 col = mix(fill, ink, dark);
+          float g = t.b, rim = clamp(1. - abs(g * 2. - 1.), 0., 1.);               // glass: a pale band with a darker rim
+          vec3 c = mix(mix(glass, ink, rim * .8), col, solid);
+          float a = max(solid, smoothstep(.04, .35, g));
+          if (a < .01) discard;
+          gl_FragColor = vec4(c, a * opacity);
+          #include <colorspace_fragment>
+        }` });
+  }
+  async function buildCap(S, y) {                   // S: cut segments per class (walls, objects, glass)
+    let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9;
+    for (const a of [S.w, S.o, S.g]) for (let i = 0; i < a.length; i += 2) {
+      const x = a[i], z = a[i + 1]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (z < z0) z0 = z; if (z > z1) z1 = z; }
+    if (x1 < x0) return null;
+    const pad = (CAP.close + 6) * CAP.px; x0 -= pad; z0 -= pad; x1 += pad; z1 += pad;
+    let px = CAP.px; while ((x1 - x0) / px > 2400 || (z1 - z0) / px > 2400) px *= 1.25;
+    const w = Math.ceil((x1 - x0) / px), h = Math.ceil((z1 - z0) / px), n = w * h;
+    const paint = (segs, half, solids) => {         // white on black: every cut line `half` thick each way, closed loops filled
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+      g.setTransform(1 / px, 0, 0, 1 / px, -x0 / px, -z0 / px);
+      g.fillStyle = g.strokeStyle = '#fff'; g.lineCap = g.lineJoin = 'round'; g.lineWidth = half * 2;
+      const { closed, open } = chain(segs), trace = (p, l, shut) => { p.moveTo(l[0], l[1]); for (let i = 2; i < l.length; i += 2) p.lineTo(l[i], l[i + 1]); if (shut) p.closePath(); };
+      if (solids) for (const grp of nestGroups(closed)) { const p = new Path2D(); grp.forEach(l => trace(p, l, true)); g.fill(p, 'evenodd'); }
+      const p = new Path2D(); closed.forEach(l => trace(p, l, true)); open.forEach(l => trace(p, l, false)); g.stroke(p);
+      return g.getImageData(0, 0, w, h).data;
+    };
+    const data = new Uint8Array(n * 4), mask = new Uint8Array(n);
+    const field = (segs, r, ch) => {                // distance inside the closed mask into channel ch; an empty class stays 0 = far outside
+      if (!segs.length) return;
+      const img = paint(segs, px, true);
+      for (let i = 0; i < n; i++) mask[i] = img[i * 4] > 127 ? 1 : 0;
+      boxMorph(mask, w, h, r, true); boxMorph(mask, w, h, r, false);      // closing: gaps up to 2r pixels wide fill in
+      const d = edt(mask, w, h);
+      for (let i = 0; i < n; i++) { const sd = (d[i] - .5) * px; data[i * 4 + ch] = sd <= -CAP.range ? 0 : sd >= CAP.range ? 255 : Math.round(127.5 + sd / CAP.range * 127.5); }
+    };
+    field(S.w, CAP.close, 0); await tick();
+    field(S.o, CAP.join, 1); await tick();
+    const gl = S.g.length ? paint(S.g, CAP.glass, false) : null;
+    for (let i = 0; i < n; i++) { data[i * 4 + 2] = gl ? gl[i * 4] : 0; data[i * 4 + 3] = 255; }
+    const tex = new THREE.DataTexture(data, w, h, THREE.RGBAFormat);
+    tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.generateMipmaps = true; tex.needsUpdate = true;
+    const g = new THREE.BufferGeometry(), X1 = x0 + w * px, Z1 = z0 + h * px;
+    g.setAttribute('position', new THREE.Float32BufferAttribute([x0, y, z0, X1, y, z0, X1, y, Z1, x0, y, Z1], 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2)); g.setIndex([0, 2, 1, 0, 3, 2]);
+    const m = new THREE.Mesh(g, capMaterial(tex)); m.renderOrder = 4; m.frustumCulled = false;
+    return m;
+  }
+  // The vertical section (setSection) keeps plain outlines along the shell.
   const ta = new THREE.Vector3(), tb = new THREE.Vector3(), tc = new THREE.Vector3(), tri = [ta, tb, tc], dv = [0, 0, 0];
-  function slice(out, pos, M, axis, c, off) {             // axis 0 = x (section), 1 = y (plan cut)
+  function sliceX(out, pos, M, c, off) {
     for (let i = 0; i < pos.count; i += 3) {
-      for (let k = 0; k < 3; k++) { tri[k].fromBufferAttribute(pos, i + k).applyMatrix4(M); dv[k] = tri[k].getComponent(axis) - c; }
+      for (let k = 0; k < 3; k++) { tri[k].fromBufferAttribute(pos, i + k).applyMatrix4(M); dv[k] = tri[k].x - c; }
       let n = 0; const h = [];
       for (const [i0, i1] of [[0, 1], [1, 2], [2, 0]]) {
         if ((dv[i0] < 0) === (dv[i1] < 0)) continue;
         const t = dv[i0] / (dv[i0] - dv[i1]), p0 = tri[i0], p1 = tri[i1];
         h.push(p0.x + (p1.x - p0.x) * t, p0.y + (p1.y - p0.y) * t, p0.z + (p1.z - p0.z) * t); n++;
       }
-      if (n === 2) { h[axis] += off; h[3 + axis] += off; out.push(...h); }
+      if (n === 2) { h[0] += off; h[3] += off; out.push(...h); }
     }
   }
-  // Wall tops: the containers are a corrugated skin plus a lining ~10 cm inside it, with nothing between.
-  // At a plan cut each lining run is joined to the outer face, filled and closed with end lines at openings.
-  const WALL_TOP = 0x6E6F6A, NEAR = .25;
-  const FOOT = [[0, L, 0, 3 * Wd], [0, L, 0, 2 * Wd]];          // outer faces per level: x0, x1, z0, z1
-  let wallFill = null;
-  function liningRuns(runs, seg, lvl) {
-    const f = FOOT[lvl] || FOOT[0];
-    for (let i = 0; i < seg.length; i += 6) {
-      const [x0, y, z0, x1, , z1] = seg.slice(i, i + 6);
-      const alongX = Math.abs(z1 - z0) < .01, alongZ = Math.abs(x1 - x0) < .01;
-      if (!alongX && !alongZ) continue;
-      const w = alongX ? (z0 + z1) / 2 : (x0 + x1) / 2, lo = alongX ? f[2] : f[0], hi = alongX ? f[3] : f[1];
-      const edge = w - lo < NEAR ? lo : hi - w < NEAR ? hi : null; if (edge === null) continue;
-      const key = `${alongX ? 'x' : 'z'}|${edge}|${w.toFixed(2)}|${lvl}`;
-      const r = runs.get(key) || { alongX, w, edge, y, lvl, iv: [] }; runs.set(key, r);
-      r.iv.push(alongX ? [Math.min(x0, x1), Math.max(x0, x1)] : [Math.min(z0, z1), Math.max(z0, z1)]);
-    }
-  }
-  function wallTops(runs, lineOut) {
-    const tri = [];
-    for (const r of runs.values()) {
-      const f = FOOT[r.lvl] || FOOT[0], lo = r.alongX ? f[0] : f[2], hi = r.alongX ? f[1] : f[3];
-      const iv = r.iv.sort((a, b) => a[0] - b[0]), merged = [];
-      iv.forEach(([a, b]) => { const m = merged[merged.length - 1]; if (m && a - m[1] < .02) m[1] = Math.max(m[1], b); else merged.push([a, b]); });
-      const P = (u, v) => r.alongX ? [u, r.y - .006, v] : [v, r.y - .006, u];        // u along the wall, v across it
-      merged.forEach(([a, b]) => {
-        const ca = a - lo < NEAR, cb = hi - b < NEAR; if (ca) a = lo; if (cb) b = hi;   // run into the corner
-        if (b - a < .03) return;
-        const p = [P(a, r.w), P(b, r.w), P(b, r.edge), P(a, r.edge)];
-        tri.push(...p[0], ...p[1], ...p[2], ...p[0], ...p[2], ...p[3]);
-        const L2 = (u, v0, v1) => { const s = P(u, v0), e = P(u, v1); s[1] = e[1] = r.y - .004; lineOut.push(...s, ...e); };
-        if (!ca) L2(a, r.w, r.edge); if (!cb) L2(b, r.w, r.edge);                    // close the wall at openings
-      });
-    }
-    if (!tri.length) return null;
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(tri, 3));
-    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: WALL_TOP, side: THREE.DoubleSide }));
-    m.renderOrder = 4; return m;
+  // The cut the viewer is heading for: one key per distinct result, 'off' while nothing is cut.
+  const cutKeyOf = s => s.cut < 39 || s.section > .001
+    ? [s.cut.toFixed(3), s.section.toFixed(3), s.explode.toFixed(3), s.build.toFixed(3), s.extrude.toFixed(3), s.m0, s.m1, s.m2, [...layerOff].sort().join()].join('|') : 'off';
+  function showCuts() {                             // every frame: on only when the cap belongs to where the model now stands
+    let on = !cutBusy && cutKey === cutKeyOf(target);
+    if (on) for (const k in CUT_TOL) if (Math.abs(target[k] - cur[k]) > CUT_TOL[k]) { on = false; break; }
+    if (cap) cap.visible = on; if (cutLines) cutLines.visible = on;
+    return on;
   }
   async function updateCuts() {
-    const hOn = cur.cut < 39, sOn = cur.section > .001, xc = section.constant - root.position.x;
-    const key = [hOn ? cur.cut.toFixed(3) : '-', sOn ? xc.toFixed(3) : '-', cur.explode.toFixed(3), cur.build.toFixed(3),
-                 cur.m0, cur.m1, cur.m2, [...layerOff].sort().join()].join('|');
-    if (key === cutKey) { if (cutLines) cutLines.visible = true; if (wallFill) wallFill.visible = true; return; }
-    if (cutBusy) return; cutBusy = true; cutKey = key;
-    if (cutLines) { root.remove(cutLines); cutLines.geometry.dispose(); cutLines = null; }
-    if (wallFill) { root.remove(wallFill); wallFill.geometry.dispose(); wallFill = null; }
+    const key = cutKeyOf(target);
+    if (key === cutKey || cutBusy) return;
+    cutBusy = true; cutKey = key;
+    if (cap) { root.remove(cap); cap.geometry.dispose(); cap.material.uniforms.map.value.dispose(); cap.material.dispose(); cap = null; }
+    if (cutLines) { root.remove(cutLines); cutLines.geometry.dispose(); cutLines.material.dispose(); cutLines = null; }
+    const hOn = target.cut < 39, sOn = target.section > .001, y = target.cut;
     if (hOn || sOn) {
-      fat ||= await Promise.all([import('three/addons/lines/LineSegments2.js'), import('three/addons/lines/LineSegmentsGeometry.js'),
-                                 import('three/addons/lines/LineMaterial.js')]);
-      const out = [], M = new THREE.Matrix4(), runs = new Map();
+      const S = { w: [], o: [], g: [] }, out = [], M = new THREE.Matrix4(), live = { ...cur };
+      Object.assign(cur, target); apply();          // slice the model as it will stand at the end of the move, not as it is mid-way
+      const xc = section.constant - root.position.x;
       pieces.forEach(p => {
         if (p.vis < .5) return; p.obj.updateMatrix();
         p.obj.traverse(n => {
-          if (!n.isMesh || !n.visible || n.userData.hull || n.userData.kind === 'glass' || !n.userData.kind) return;
+          const k = n.userData.kind;
+          if (!n.isMesh || !n.visible || n.userData.hull || !k) return;
           M.copy(p.obj.matrix).multiply(n.matrix);
-          if (hOn) {
-            const n0 = out.length; slice(out, n.geometry.attributes.position, M, 1, cur.cut, -.004);
-            if (n.userData.kind === 'interior' && (p.step === 4 || p.step === 6)) liningRuns(runs, out.slice(n0), p.level);
-          }
-          if (sOn && p.shell) slice(out, n.geometry.attributes.position, M, 0, xc, -.004);
+          if (hOn) sliceY(S[n.userData.cap || capClass(k, '')], n.geometry.attributes.position, M, y);
+          if (sOn && p.shell && k !== 'glass') sliceX(out, n.geometry.attributes.position, M, xc, -.004);
         });
       });
-      if (runs.size && (wallFill = wallTops(runs, out))) { wallFill.material.clippingPlanes = [hcut]; root.add(wallFill); }
+      Object.assign(cur, live); apply();
+      if (hOn) { await tick(); cap = await buildCap(S, y - .0015); if (cap) { cap.visible = false; root.add(cap); } }
       if (out.length) {
+        fat ||= await Promise.all([import('three/addons/lines/LineSegments2.js'), import('three/addons/lines/LineSegmentsGeometry.js'),
+                                   import('three/addons/lines/LineMaterial.js')]);
         const g = new fat[1].LineSegmentsGeometry(); g.setPositions(out);
         const m = new fat[2].LineMaterial({ color: 0x131313, linewidth: 2.4 });
         m.resolution.set(canvas.clientWidth, canvas.clientHeight); m.clippingPlanes = hOn ? [hcut] : [];
-        cutLines = new fat[0].LineSegments2(g, m); cutLines.renderOrder = 5; root.add(cutLines);
+        cutLines = new fat[0].LineSegments2(g, m); cutLines.renderOrder = 5; cutLines.visible = false; root.add(cutLines);
       }
     }
     cutBusy = false; dirty = true; kick();
@@ -534,8 +692,12 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
   function frame(now) {
     raf = 0;
     const dt = Math.min(.05, (now - last) / 1000); last = now;
-    if (step(dt)) { dirty = true; if (cutLines) cutLines.visible = false; if (wallFill) wallFill.visible = false; }
-    else if (model && pieces.length) updateCuts();
+    if (step(dt)) dirty = true;
+    if (model && pieces.length) {                       // the cut follows its own state only: orbit and zoom leave it alone
+      updateCuts();
+      const u = showCuts() && cap && cap.material.uniforms.opacity;
+      if (u && u.value < 1) { u.value = Math.min(1, u.value + dt * 6); dirty = true; }
+    }
     if (hero) { spin.rotation.y += dt * .08; dirty = true; }
     if (dirty && visible) { apply(); renderer.render(scene, cam); dirty = false; raf = requestAnimationFrame(frame); }
   }

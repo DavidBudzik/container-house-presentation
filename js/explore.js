@@ -17,7 +17,7 @@ export function initExplore(axo) {
 
   /* ---------- modes ---------- */
   const ALL = ['shell', 'steel', 'frame', 'glass', 'timber', 'interior', 'accent', 'floor', 'furniture', 'roof', 'pv', 'pier'];
-  const INSIDE = new Set(['shell', 'interior', 'accent', 'floor', 'furniture', 'glass']);
+  const INSIDE = new Set(['shell', 'interior', 'accent', 'floor', 'furniture', 'glass', 'roof']);   // roof: the terrace paving beside the upper rooms; whatever is above the cut is gone anyway
   // at = camera target (m, drawing origin = NW container corner), levels shown, cut = plan-cut height (m)
   const FLOOR = {
     ground: { at: [6.1, 1.0, 3.7], zoom: 1.3,  levels: [1, 0, 0], cut: 2.5 },

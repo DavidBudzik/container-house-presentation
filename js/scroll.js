@@ -54,7 +54,8 @@ export function initScroll() {
       if (st) scrollTo(st.start + (st.end - st.start) * (i + .5) / btns.length); else pick(i);
     }));
   }
-  const tags = ['5 × 40 ft HC · 12 190 × 7 320 mm', '2 × 40 ft HC · terrace 29.7 m²', 'A–A · +0.40 / +3.30 / +6.20', 'B–B · 12 190 mm'];
+  const tags = ['5 × 40 ft HC · 12 190 × 7 320 mm', '2 × 40 ft HC · terrace 29.7 m²', 'A–A · +0.40 / +3.30 / +6.20', 'B–B · 12 190 mm',
+    'South · 12 190 mm', 'East · 7 320 mm', 'North · 12 190 mm', 'West · 7 320 mm'];   // one per row of #planList
   pinList('.plan-stage', '#planList', '#planMedia', i => { const t = document.getElementById('planTag'); if (t) t.textContent = tags[i]; });
   pinList('.rooms-stage', '#roomList', '#roomMedia');
 
