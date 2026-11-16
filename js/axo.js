@@ -377,7 +377,7 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
       p.anchor = new THREE.Vector3((b.min.x + b.max.x) / 2, b.max.y, (b.min.z + b.max.z) / 2);
       p.el = mkLabel(p.label);
     }
-    applyLayers(); dirty = true; kick();
+    cutKey = ''; applyLayers(); dirty = true; kick();      // a cut taken before the model arrived is taken again
   }
 
   // Real look: the GLB carries the Blender materials as the flat colours Cycles measures (web-model/export_glb_viewer_v2.py). Same step/level/kind buckets as the
@@ -439,7 +439,7 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
       p.anchor = new THREE.Vector3((b.min.x + b.max.x) / 2, b.max.y, (b.min.z + b.max.z) / 2);
       p.el = mkLabel(p.label);
     }
-    applyLayers(); dirty = true; kick();
+    cutKey = ''; applyLayers(); dirty = true; kick();      // a cut taken before the model arrived is taken again
   }
 
   const layerOff = new Set();
@@ -451,8 +451,9 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
   // becomes a distance field, and one plane at the cut height draws fill and outline from that texture. Nothing
   // changes while the view orbits: the cap is rebuilt only when the cut itself changes (height, levels, layers, build),
   // and for the state the viewer is easing towards, so it is ready by the time the cut arrives.
-  const CAP = { px: .01, close: 6, join: 1, glass: .016, line: .024, minPx: 2.3, range: .08,      // close / join: gaps closed, in pixels each way
-                fill: 0xF3F1EC, glassCol: 0xC6D8DE, ink: 0x131313 };                              // metres; colours of the cut face
+  const CAP = { px: .01, close: 6, join: 1, glass: .016, line: .003, minPx: 1.25, range: .08,     // close / join: gaps closed, in pixels each way
+                hatch: .1, hatchPx: 1, hatchInk: .75,                                             // walls: 45° hatch (in plan) every 10 cm, 1 px lines at 75 % ink
+                fill: 0xF3F1EC, glassCol: 0xC6D8DE, ink: 0x131313 };                              // metres, minPx / hatchPx in CSS pixels; colours of the cut face
   const CUT_TOL = { cut: .01, section: .01, explode: .004, build: .01, extrude: .01, m0: .04, m1: .04, m2: .04 };   // how near the eased state must be for the cap to show
   let cap = null, cutLines = null, cutKey = '', fat = null, cutBusy = false;
   const tick = () => new Promise(r => setTimeout(r));
@@ -564,18 +565,23 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
     return new THREE.ShaderMaterial({
       transparent: true, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1, extensions: { derivatives: true },
       uniforms: { map: { value: tex }, fill: { value: new THREE.Color(CAP.fill) }, glass: { value: new THREE.Color(CAP.glassCol) }, ink: { value: new THREE.Color(CAP.ink) },
-                  range: { value: CAP.range }, line: { value: CAP.line }, minPx: { value: CAP.minPx }, opacity: { value: 0 } },
-      vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
-      fragmentShader: `uniform sampler2D map; uniform vec3 fill, glass, ink; uniform float range, line, minPx, opacity; varying vec2 vUv;
+                  range: { value: CAP.range }, line: { value: CAP.line }, minPx: { value: CAP.minPx }, dpr: { value: renderer.getPixelRatio() },
+                  hatch: { value: CAP.hatch }, hatchPx: { value: CAP.hatchPx }, hatchInk: { value: CAP.hatchInk }, opacity: { value: 0 } },
+      vertexShader: 'varying vec2 vUv, vXZ; void main() { vUv = uv; vXZ = position.xz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
+      fragmentShader: `uniform sampler2D map; uniform vec3 fill, glass, ink; uniform float range, line, minPx, dpr, hatch, hatchPx, hatchInk, opacity; varying vec2 vUv, vXZ;
+        float pw(float v) { return max(length(vec2(dFdx(v), dFdy(v))), 1e-5); }   // metres per screen pixel across v, the same in every direction
         void main() {
           vec4 t = texture2D(map, vUv);
           float w = (t.r * 2. - 1.) * range, o = (t.g * 2. - 1.) * range;        // metres inside the wall band / inside an object
-          float aw = max(fwidth(w), 1e-5), ao = max(fwidth(o), 1e-5);
+          float aw = pw(w), ao = pw(o);
           float cw = clamp(w / aw + .5, 0., 1.), co = clamp(o / ao + .5, 0., 1.);   // coverage
-          float lw = max(line, minPx * aw), lo = max(line, minPx * ao);            // the black edge: 24 mm wide, never thinner than about two screen pixels
+          float lw = max(line, minPx * dpr * aw), lo = max(line, minPx * dpr * ao); // the outline: a hairline minPx CSS pixels wide at any zoom
           float ew = 1. - clamp((w - lw) / aw + .5, 0., 1.), eo = 1. - clamp((o - lo) / ao + .5, 0., 1.);
           float solid = max(cw, co), dark = max(eo * co, ew * cw * (1. - co));     // an object keeps its own outline against a wall
-          vec3 col = mix(fill, ink, dark);
+          float s = (vXZ.x - vXZ.y) * .70710678, n = hatch / pw(s), hp = hatchPx * dpr;   // wall hatch, fixed to the model: metres across it, spacing and width in pixels
+          float hl = clamp(.5 * hp + .5 - abs(fract(s / hatch + .5) - .5) * n, 0., 1.);
+          hl = mix(min(hp / n, 1.), hl, smoothstep(2.5, 4.5, n));                  // lines closer than a few pixels become an even tone, no moiré
+          vec3 col = mix(mix(fill, ink, hl * hatchInk * cw * (1. - co)), ink, dark);
           float g = t.b, rim = clamp(1. - abs(g * 2. - 1.), 0., 1.);               // glass: a pale band with a darker rim
           vec3 c = mix(mix(glass, ink, rim * .8), col, solid);
           float a = max(solid, smoothstep(.04, .35, g));
@@ -604,13 +610,18 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
       return g.getImageData(0, 0, w, h).data;
     };
     const data = new Uint8Array(n * 4), mask = new Uint8Array(n);
-    const field = (segs, r, ch) => {                // distance inside the closed mask into channel ch; an empty class stays 0 = far outside
+    const field = (segs, r, ch) => {                // signed distance to the edge of the closed mask into channel ch; an empty class stays 0 = far outside
       if (!segs.length) return;
       const img = paint(segs, px, true);
       for (let i = 0; i < n; i++) mask[i] = img[i * 4] > 127 ? 1 : 0;
       boxMorph(mask, w, h, r, true); boxMorph(mask, w, h, r, false);      // closing: gaps up to 2r pixels wide fill in
-      const d = edt(mask, w, h);
-      for (let i = 0; i < n; i++) { const sd = (d[i] - .5) * px; data[i * 4 + ch] = sd <= -CAP.range ? 0 : sd >= CAP.range ? 255 : Math.round(127.5 + sd / CAP.range * 127.5); }
+      const d = edt(mask, w, h);                                            // inside: distance to the nearest pixel outside
+      for (let i = 0; i < n; i++) mask[i] ^= 1;
+      const e = edt(mask, w, h);                                            // outside: distance to the nearest pixel inside
+      for (let i = 0; i < n; i++) {                 // two-sided, so the field runs straight through the edge and a hairline stays even
+        const sd = (d[i] > 0 ? d[i] - .5 : .5 - e[i]) * px;
+        data[i * 4 + ch] = sd <= -CAP.range ? 0 : sd >= CAP.range ? 255 : Math.round(127.5 + sd / CAP.range * 127.5);
+      }
     };
     field(S.w, CAP.close, 0); await tick();
     field(S.o, CAP.join, 1); await tick();
@@ -709,6 +720,7 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, innerWidth < 768 ? 1.5 : 2));
     renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     if (cutLines) cutLines.material.resolution.set(canvas.clientWidth, canvas.clientHeight);
+    if (cap) cap.material.uniforms.dpr.value = renderer.getPixelRatio();
     kick();
   }
   resize();

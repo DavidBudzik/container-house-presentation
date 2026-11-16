@@ -30,7 +30,7 @@ export function initScroll() {
   };
   ScrollTrigger.create({ start: 0, end: 'max', onUpdate: navTone }); navTone();
 
-  if (!reduce) gsap.fromTo('.hero-img', { scale: 1.08 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+  if (!reduce) gsap.fromTo('.hero-img, .hero-video', { scale: 1.08 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 
   /* pinned pick list: scroll position picks the item, clicks scroll to it */
   function pinList(stageSel, listSel, mediaSel, onPick) {
@@ -54,10 +54,31 @@ export function initScroll() {
       if (st) scrollTo(st.start + (st.end - st.start) * (i + .5) / btns.length); else pick(i);
     }));
   }
-  const tags = ['5 × 40 ft HC · 12 190 × 7 320 mm', '2 × 40 ft HC · terrace 29.7 m²', 'A–A · +0.40 / +3.30 / +6.20', 'B–B · 12 190 mm',
-    'South · 12 190 mm', 'East · 7 320 mm', 'North · 12 190 mm', 'West · 7 320 mm'];   // one per row of #planList
+  // one per row of #planList (six since 2026-11-15; the twelve-row captions are in the archived plan-list markup)
+  const tags = ['5 × 40 ft HC · 12 190 × 7 320 mm', '2 × 40 ft HC · terrace 29.7 m²', 'B–B · 12 190 mm', 'South · 12 190 mm',
+    'Isometric · from the south-east', 'Ground floor · walls cut 1.2 m above the floor'];
   pinList('.plan-stage', '#planList', '#planMedia', i => { const t = document.getElementById('planTag'); if (t) t.textContent = tags[i]; });
-  pinList('.rooms-stage', '#roomList', '#roomMedia');
+  pinList('.rooms-stage', '#roomList', '#roomMedia', roomClips());
+
+  /* rooms: the selected room's walkthrough clip fades in over its still and loops, only while the list is on screen.
+     The clip shows once it is really playing, so the still never gives way to an empty frame. */
+  function roomClips() {
+    const media = document.getElementById('roomMedia');
+    const clips = [...document.querySelectorAll('#roomMedia video.room-clip')];
+    if (!media || !clips.length || reduce) return null;
+    let room = 0, seen = false;
+    const sync = () => clips.forEach(v => {
+      const live = seen && +v.dataset.room === room;
+      if (live) { v.preload = 'auto'; v.play().catch(() => {}); }
+      else {
+        v.pause(); v.classList.remove('on');
+        if (seen && Math.abs(+v.dataset.room - room) <= 2) v.preload = 'auto';   // buffer the neighbours, so the next room is ready
+      }
+    });
+    clips.forEach(v => v.addEventListener('playing', () => { if (+v.dataset.room === room && seen) v.classList.add('on'); }));
+    new IntersectionObserver(es => { seen = es[0].isIntersecting; sync(); }, { threshold: .25 }).observe(media);
+    return i => { room = i; sync(); };
+  }
 
   /* clay → finished wipe */
   const wipe = document.getElementById('wipe');

@@ -10,13 +10,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&family=Heebo:wght@300;400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=54">
+<link rel="stylesheet" href="site.css?v=77">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" defer></script>
-<script type="module" src="js/main.js?v=87"></script>
+<script type="module" src="js/main.js?v=108"></script>
 <script type="module" src="js/compare.js?v=1"></script>
+<script type="module" src="js/tools.js?v=3"></script>
 </head>
 <body>
 
@@ -40,12 +41,17 @@
 <!-- HERO: inset media card, headline bottom-left -->
 <section class="hero" data-theme="dark">
   <div class="card hero-card">
-    <img class="hero-img" src="assets/img/hero-mediterranean-garden.webp" alt="The two-storey container house from the garden lawn, white and oak cladding under the pergola, olive-grove hills behind (rendered from the model)" width="2000" height="1333">
+    <img class="hero-img" src="assets/img/mediterranean-blue-sky-editorial-v3-2560.webp" srcset="assets/img/mediterranean-blue-sky-editorial-v3.webp 1536w, assets/img/mediterranean-blue-sky-editorial-v3-2560.webp 2560w" sizes="100vw" alt="The two-storey container house in an olive grove, seen from above: pergola deck, stone garden walks, two parked cars and wooded Mediterranean hills behind (AI-assisted editorial image over a render of the model)" width="2560" height="1707">
+    <!-- hero: the user's Higgsfield film hf_20261115_125201 (15 s, six shots: headlights at dusk, the lit house, the couple
+         walking into the sun, a picnic, the couple on the sofa, the car from the air at sunset); copy of the source in
+         Cinematic Concepts/AI Generated Videos; scripts/web_loop.py --no-pingpong, 1080p, 4.9 MB. Earlier heroes kept in the
+         folder: hero-cut-v2.mp4, hero-cut.mp4, hero-entry.mp4 -->
+    <video class="hero-video" src="assets/video/walk/hero-film-hf125201.mp4" poster="assets/video/walk/hero-film-hf125201.jpg" muted autoplay loop playsinline preload="auto" data-inview data-bg aria-hidden="true"></video>
     <div class="hero-copy">
       <p class="label" data-i18n="hero.kicker">3D visualization and interactive presentations</p>
       <h1><span data-i18n="hero.t1">Help your clients see</span> <br><span data-i18n="hero.t2">what they're buying.</span></h1>
     </div>
-    <p class="hero-meta" data-i18n="hero.meta">The Container House · demonstration project</p>
+    <p class="hero-meta" data-i18n="hero.meta">The Container House · demonstration project · AI-finished film</p>
   </div>
 </section>
 
@@ -72,75 +78,42 @@
   </div>
 </section>
 
-<!-- PLAN: sticky list beside clean top views and sections rendered from the model -->
+<!-- PLAN: sticky list beside clean top views and sections rendered from the model (the 2026-11-11 ink set, assets/img/ink-*.webp,
+     was tried on 2026-11-15 and withdrawn: it predates the redesign). Since 2026-11-15 (user: "use the clean set without the
+     plants and also isometric views") the two plans are drawn without plants too (*-natural-v4.png, drawings/views_v4) and
+     four isometric views follow the elevations; the three south-east ones share one frame, so a swap opens the house in place.
+     Curated to six the same day (user: "too many views, lets kee curate 6 max"): plans, section B-B, south elevation, the
+     south-east isometric and its ground-floor cutaway. The twelve-row version is in
+     ../archive/previous-project-files/bzik-site-unused/plan-list-12-views.removed-2026-11-15.html.
+     Then (user: "I meant Ink Clean") the six are drawn in the ink look of the 11 Nov drawing set, without plants, from the
+     redesigned house: assets/img/*-ink-clean.webp (drawings/build_views.py --lines + compose_ink.py, drawings/web_ink_v1). -->
+
+
 <section class="plan" id="plan">
   <div class="plan-stage gut">
     <div class="plan-copy">
       <p class="label" data-i18n="cap.plan.k">View drawings · drawn from the model</p>
       <h2 data-i18n="cap.plan.t">Start with the plans.</h2>
-      <p class="muted" data-i18n="cap.plan.b">Two plans, two sections and four elevations, all drawn from the 3D model at one scale. Select a drawing to study the layout before you step inside.</p>
+      <p class="muted" data-i18n="cap.plan.b">Two plans, a section, an elevation and two isometric views, all drawn from the 3D model; the plans, the section and the elevation share one scale. Select a drawing to study the layout before you step inside.</p>
       <ol class="pick-list" id="planList">
         <li><button type="button"><span data-i18n="plan.gf">Ground floor</span><em>1:100</em></button></li>
         <li><button type="button"><span data-i18n="plan.uf">Upper floor</span><em>1:100</em></button></li>
-        <li><button type="button"><span data-i18n="plan.sa">Section A–A</span><em>1:100</em></button></li>
         <li><button type="button"><span data-i18n="plan.sb">Section B–B</span><em>1:100</em></button></li>
         <li><button type="button"><span data-i18n="plan.es">South elevation</span><em>1:100</em></button></li>
-        <li><button type="button"><span data-i18n="plan.ee">East elevation</span><em>1:100</em></button></li>
-        <li><button type="button"><span data-i18n="plan.en">North elevation</span><em>1:100</em></button></li>
-        <li><button type="button"><span data-i18n="plan.ew">West elevation</span><em>1:100</em></button></li>
+        <li><button type="button"><span data-i18n="plan.i1">Isometric, south-east</span><em>Iso</em></button></li>
+        <li><button type="button"><span data-i18n="plan.i2">Ground floor, cut away</span><em>Iso</em></button></li>
       </ol>
     </div>
     <div class="card plan-card" id="planMedia">
-      <img src="assets/img/plan-gf-natural-v3.png" alt="Ground floor plan of the redesigned house: living, dining and kitchen in one open room, WC and laundry, entry, stair and the wraparound deck" class="on">
-      <img src="assets/img/plan-uf-natural-v3.png" alt="Upper floor plan: main bedroom, ensuite, walk-in wardrobe, family bath, home office, landing and the roof terrace, with the decks below as a dashed outline" loading="lazy">
-      <img src="assets/img/sec-aa-natural-v3.png" alt="Cross section A–A through both storeys, the roof terrace and the deck under its pergola" loading="lazy">
-      <img src="assets/img/sec-bb-natural-v3.png" alt="Long section B–B: living room, kitchen and stair below, bedroom and landing above, solar panels on the roof" loading="lazy">
-      <img src="assets/img/elev-south-natural-v3.png" alt="South elevation: the glazed garden front, the deck under its pergola and the roof terrace above" loading="lazy">
-      <img src="assets/img/elev-east-natural-v3.png" alt="East elevation: the entry side, with the deck, the pergola and the upper terrace" loading="lazy">
-      <img src="assets/img/elev-north-natural-v3.png" alt="North elevation: the closed side, with narrow windows on both floors" loading="lazy">
-      <img src="assets/img/elev-west-natural-v3.png" alt="West elevation: full-height glazing on both floors" loading="lazy">
+      <img src="assets/img/plan-gf-ink-clean.webp" alt="Ground floor plan of the redesigned house: living, dining and kitchen in one open room, WC and laundry, entry, stair and the wraparound deck" class="on">
+      <img src="assets/img/plan-uf-ink-clean.webp" alt="Upper floor plan: main bedroom, ensuite, walk-in wardrobe, family bath, home office, landing and the roof terrace, with the decks below as a dashed outline" loading="lazy">
+      <img src="assets/img/sec-bb-ink-clean.webp" alt="Long section B–B: living room, kitchen and stair below, bedroom and landing above, solar panels on the roof" loading="lazy">
+      <img src="assets/img/elev-south-ink-clean.webp" alt="South elevation: the glazed garden front, the deck under its pergola and the roof terrace above" loading="lazy">
+      <img src="assets/img/iso-se-ink-clean.webp" alt="Isometric view from the south-east: the timber pergola over the south and entry decks, the roof terrace under its shade, solar panels on the roof" loading="lazy">
+      <img src="assets/img/iso-se-ground-ink-clean.webp" alt="Isometric cut-away of the ground floor, walls cut 1.2 m above the floor: living room, dining table for eight, kitchen run and WC, with the decks around" loading="lazy">
       <span class="tag" id="planTag">5 × 40 ft HC · 12 190 × 7 320 mm</span>
     </div>
   </div>
-</section>
-
-<!-- JOURNEY: one scroll-scrubbed shot. The house assembles in iso, the camera flies down to the garden path,
-     and the walkthrough carries on inside. Frames rendered in Blender (walkthrough/flyin, walkthrough/web_tour_eevee.py). -->
-<section class="journey inset" id="journey">
-  <figure class="card jr-card light" id="jrCard">
-    <img class="jr-still" src="assets/journey/f_0287.webp?v=2" alt="" width="1280" height="720" loading="lazy">
-    <canvas id="jrCanvas" width="1280" height="720" role="img" aria-label="A white model of the container house assembling layer by layer and settling on its front elevation, then one continuous camera walking in through the front door: entry, dining and kitchen, living room, up the stair to the home office, out onto the terrace, into the main bedroom, and lifting off to an overview of the whole house"></canvas>
-    <div class="jr-copy">
-      <div class="jr-cap on" data-ch="found">
-        <p class="label" data-i18n="asm.k">Assembly · rendered from the model</p>
-        <h2 data-i18n="asm.t">Watch it come together.</h2>
-        <p class="jr-body" data-i18n="asm.b">Five containers, a steel frame, one roof. The house goes together layer by layer, from the piers to the solar panels, so a client can follow the build order.</p>
-      </div>
-      <div class="jr-cap" data-ch="mods"><p class="label" data-i18n="asm.k">Assembly · rendered from the model</p><h2 data-i18n="jr.t.mods">Five containers, craned into place.</h2></div>
-      <div class="jr-cap" data-ch="roof"><p class="label" data-i18n="asm.k">Assembly · rendered from the model</p><h2 data-i18n="jr.t.roof">Steel, glass, deck and roof.</h2></div>
-      <div class="jr-cap" data-ch="arrive"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="jr.t.arrive">Step inside the project.</h2></div>
-      <div class="jr-cap" data-ch="entry"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="tour.2">Entry, dining and kitchen</h2></div>
-      <div class="jr-cap" data-ch="living"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="tour.3">Living room, out to the garden</h2></div>
-      <div class="jr-cap" data-ch="up"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="jr.t.up">Up the stair to the studio office</h2></div>
-      <div class="jr-cap" data-ch="terrace"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="jr.t.terrace">Out onto the upper terrace</h2></div>
-      <div class="jr-cap" data-ch="bedroom"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="jr.t.bedroom">Into the main bedroom</h2></div>
-      <div class="jr-cap" data-ch="over"><p class="label" data-i18n="tour.k">Walkthrough · rendered from the model</p><h2 data-i18n="jr.t.over">Lift off, and see how it all connects.</h2></div>
-    </div>
-    <nav class="jr-rail" aria-label="Chapters">
-      <i class="jr-line" aria-hidden="true"><b id="jrBar"></b></i>
-      <button type="button"><span data-i18n="jr.found">Foundations</span></button>
-      <button type="button"><span data-i18n="jr.mods">Modules</span></button>
-      <button type="button"><span data-i18n="jr.roof">Roof</span></button>
-      <button type="button"><span data-i18n="jr.arrive">Arrive</span></button>
-      <button type="button"><span data-i18n="jr.entry">Entry</span></button>
-      <button type="button"><span data-i18n="jr.living">Living</span></button>
-      <button type="button"><span data-i18n="jr.up">Upstairs</span></button>
-      <button type="button"><span data-i18n="jr.terrace">Terrace</span></button>
-      <button type="button"><span data-i18n="jr.bedroom">Bedroom</span></button>
-      <button type="button"><span data-i18n="jr.over">Overview</span></button>
-    </nav>
-    <p class="jr-hint" aria-hidden="true" data-i18n="jr.hint">Scroll to build, then walk in</p>
-  </figure>
 </section>
 
 <!-- EXPLORE: free interactive viewer -->
@@ -200,33 +173,35 @@
 <!-- FULL RENDER: the exterior, with the rooms readable behind the glass -->
 <section class="full inset" data-theme="dark">
   <div class="card full-card">
-    <img src="assets/img/garden-front-mediterranean.webp" alt="The house from the garden by day: the glazed living room under the pergola with ivy, the deck and stone path, the roof terrace above and the hills behind (rendered from the model)" width="2048" height="1365" loading="lazy">
-    <div class="full-copy"><p class="label" data-i18n="full.1k">Exterior view · rendered from the model</p><h2 data-i18n="full.1t">Understand the whole space.</h2>
+    <img src="assets/img/pergola-ivy-editorial-v3-2560.webp" srcset="assets/img/pergola-ivy-editorial-v3.webp 1672w, assets/img/pergola-ivy-editorial-v3-2560.webp 2560w" sizes="100vw" alt="The house from the garden, seen from slightly above: the glazed ground floor under the timber pergola with ivy, the deck and its steps, the roof terrace and its railing above, olive trees around (AI-assisted editorial image over a render of the model)" width="2560" height="1440" loading="lazy">
+    <video src="assets/video/walk/exterior-roof.mp4" poster="assets/video/walk/exterior-roof.jpg" muted loop playsinline preload="none" data-inview data-bg aria-hidden="true"></video>
+    <div class="full-copy"><p class="label" data-i18n="full.1k">Exterior view · AI-finished film</p><h2 data-i18n="full.1t">Understand the whole space.</h2>
       <p class="full-text" data-i18n="full.1b">One view connects the exterior with the rooms inside: living and dining behind the glass, and above them the bedroom and studio office opening onto the roof terrace.</p></div>
   </div>
 </section>
 
-<!-- ACCURACY AND CUSTOMIZATION: the statement, beside one camera shown as plain model and as finished image -->
+<!-- ACCURACY AND CUSTOMIZATION: the statement, beside one camera path shown as plain model and as AI-finished film.
+     One video holds both (model on top, film below), drawn into the canvas on either side of the divider, so they never drift apart. -->
 <section class="split gut" id="work">
   <div class="split-copy">
     <p class="label" data-i18n="brk.k">Accuracy and customization</p>
     <h2 data-i18n="brk.t">Built from your plans. Designed around your sales process.</h2>
     <p class="muted" data-i18n="brk.b">Every visualization is grounded in a 3D model built from project plans and dimensions. Each presentation is designed for your product, your audience and the way you sell, not assembled from a ready-made template.</p>
-    <p class="note" data-i18n="brk.note">Same camera, two outputs: the plain gray model and the finished image, its materials and light completed with AI assistance. Drag to compare.</p>
+    <p class="note" data-i18n="brk.note">Same camera path, two outputs: the plain 3D model and the film finished from it with AI assistance. Drag to compare.</p>
   </div>
-  <figure class="card mt-split" id="mtSplit" style="--s:50%">
-    <img src="assets/img/clay-01-open-plan.jpg" alt="Open-plan living and dining as the plain gray model" width="1920" height="1280" loading="lazy">
-    <div class="mt-top"><img src="assets/img/hf-01-open-plan.jpg" alt="The same view as a finished image (AI-assisted finish over the model's camera view)" width="1536" height="1024" loading="lazy"></div>
-    <div class="mt-handle" role="slider" tabindex="0" aria-label="Compare the gray model and the finished image" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span></span></div>
-    <span class="tag l" data-i18n="brk.lw">Gray model</span>
-    <span class="tag r" data-i18n="brk.hf">Finished image</span>
+  <figure class="card mt-split mt-film" id="mtSplit" style="--s:50%">
+    <canvas id="mtCanvas" width="1280" height="800" role="img" aria-label="The kitchen and the foot of the stair on one camera path: the plain white 3D model on one side of the divider, the AI-finished film on the other"></canvas>
+    <video id="mtVideo" src="assets/video/walk/compare-kitchen-stair.mp4" poster="assets/video/walk/compare-kitchen-stair.jpg" muted loop playsinline preload="none" data-inview aria-hidden="true"></video>
+    <div class="mt-handle" role="slider" tabindex="0" aria-label="Compare the 3D model and the AI-finished film" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span></span></div>
+    <span class="tag l" data-i18n="brk.lw">3D model</span>
+    <span class="tag r" data-i18n="brk.hf">AI-finished film</span>
   </figure>
 </section>
 
 <!-- FINISHES: chips + drag to compare, after the villa site's studies (js/compare.js). It replaced the clay → finished scroll wipe. -->
 <section class="split gut" id="finishes">
   <div class="split-copy">
-    <p class="label" data-i18n="cmp.k">Compare finishes · drawn from the model</p>
+    <p class="label" data-i18n="cmp.k">Compare finishes · rendered from the model</p>
     <h2 data-i18n="cmp.t">Compare before deciding.</h2>
     <p class="muted" data-i18n="cmp.b">Four finishes on the same model and the same elevation. Pick one, then drag to compare it with the house as designed.</p>
     <div class="chips" id="cmpChips" role="group" aria-label="Finish">
@@ -235,15 +210,15 @@
       <button type="button" class="chip" aria-pressed="false" data-i18n="cmp.o3">Terracotta &amp; walnut</button>
       <button type="button" class="chip" aria-pressed="false" data-i18n="cmp.o4">Sand &amp; black steel</button>
     </div>
-    <p class="note" data-i18n="cmp.note">South elevation, drawn from the model. The four palettes are illustrative options, not a product range.</p>
+    <p class="note" data-i18n="cmp.note">South elevation, rendered from the model. The four palettes are illustrative options, not a product range.</p>
   </div>
   <figure class="card cmp" id="cmp" style="--s:50%">
-    <img src="assets/img/finish-south-designed.webp" alt="South elevation in the finish as designed: chalk-white cladding and oak" width="2160" height="1350" loading="lazy">
+    <img src="assets/img/finish-south-designed-photo.webp" alt="Rendered south elevation in the finish as designed: chalk-white cladding and oak, the pergola casting stripes of shade" width="2160" height="1350" loading="lazy">
     <div class="cmp-top">
-      <img class="on" src="assets/img/finish-south-charcoal.webp" alt="The same elevation with charcoal cladding and larch" width="2160" height="1350" loading="lazy">
-      <img src="assets/img/finish-south-olive.webp" alt="The same elevation with olive cladding and oak" width="2160" height="1350" loading="lazy">
-      <img src="assets/img/finish-south-terracotta.webp" alt="The same elevation with terracotta cladding and walnut" width="2160" height="1350" loading="lazy">
-      <img src="assets/img/finish-south-sand.webp" alt="The same elevation with sand cladding and black steel" width="2160" height="1350" loading="lazy">
+      <img class="on" src="assets/img/finish-south-charcoal-photo.webp" alt="The same rendered elevation with charcoal cladding and larch" width="2160" height="1350" loading="lazy">
+      <img src="assets/img/finish-south-olive-photo.webp" alt="The same rendered elevation with olive cladding and an oak pergola" width="2160" height="1350" loading="lazy">
+      <img src="assets/img/finish-south-terracotta-photo.webp" alt="The same rendered elevation with terracotta cladding and walnut" width="2160" height="1350" loading="lazy">
+      <img src="assets/img/finish-south-sand-photo.webp" alt="The same rendered elevation with sand cladding and a black steel pergola" width="2160" height="1350" loading="lazy">
     </div>
     <div class="cmp-handle" role="slider" tabindex="0" aria-label="Compare the house as designed with the selected finish" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span></span></div>
     <span class="tag l" data-i18n="cmp.ref">As designed</span>
@@ -251,90 +226,168 @@
   </figure>
 </section>
 
-<!-- LAYERS: the exploded-view loop, rendered from the model in its own materials. It plays only while visible.
-     The list repeats the labels inside the film, so they are also there in Hebrew and for screen readers. -->
-<section class="layers gut" id="layers">
-  <div class="layers-copy">
-    <p class="label" data-i18n="lay.k">View structure · rendered from the model</p>
-    <h2 data-i18n="lay.t">See how the parts fit together.</h2>
-    <p class="muted" data-i18n="lay.b">The model comes apart layer by layer: roof, steel frame, both floors and their interiors. Each layer is named while it holds, then everything settles back into the finished house.</p>
-    <p class="note" data-i18n="lay.note">A 20-second loop in 4:5, sized for a social feed, a listing or a screen in the sales office.</p>
-  </div>
-  <ol class="layers-list">
-    <li><span data-i18n="lay.7">Roof + solar</span><em>07</em></li>
-    <li><span data-i18n="lay.6">Steel + pergola</span><em>06</em></li>
-    <li><span data-i18n="lay.5">Bedroom + studio</span><em>05</em></li>
-    <li><span data-i18n="lay.4">Upper floor</span><em>04</em></li>
-    <li><span data-i18n="lay.3">Living + stair</span><em>03</em></li>
-    <li><span data-i18n="lay.2">Ground floor</span><em>02</em></li>
-    <li><span data-i18n="lay.1">Piers + deck</span><em>01</em></li>
-  </ol>
-  <figure class="card layers-card">
-    <video src="assets/video/exploded-axo.mp4" poster="assets/video/exploded-axo-poster.jpg" muted loop playsinline preload="none" data-inview aria-label="The container house on a loop: the roof and solar array, the steel frame and pergola, both floors and their interiors lift apart above the piers and deck, each layer is labelled, then everything settles back into the finished house"></video>
-  </figure>
-</section>
-
 <!-- ROOMS: pinned list, image swaps as you scroll -->
 <section class="rooms" id="rooms">
   <div class="rooms-stage gut">
-    <header class="section-head"><div><p class="label" data-i18n="rooms.k">Explore rooms · rendered from the model</p><h2 data-i18n="rooms.t">From floor plan to room.</h2></div>
-      <p class="muted" data-i18n="rooms.b">Select a room to see the space at eye level. Every image is rendered from the same 3D model as the plans, so the room you see is the room on the drawing.</p></header>
+    <header class="section-head"><div><p class="label" data-i18n="rooms.k">Explore rooms · AI-assisted images and clips</p><h2 data-i18n="rooms.t">From floor plan to room.</h2></div>
+      <p class="muted" data-i18n="rooms.b">Select a room to see the space at eye level. The stills are editorial images and the clips are short films, both finished with AI assistance over the model's own camera views, so treat the garden, furniture and small details as illustrative. The main bedroom and roof terrace are shown by their clips only.</p></header>
     <div class="rooms-grid">
       <ol class="pick-list rooms-list" id="roomList">
         <li><button type="button"><span data-i18n="room.1">Entry</span><em>01</em></button></li>
         <li><button type="button"><span data-i18n="room.2">Living</span><em>02</em></button></li>
-        <li><button type="button"><span data-i18n="room.3">Dining</span><em>03</em></button></li>
-        <li><button type="button"><span data-i18n="room.4">Kitchen</span><em>04</em></button></li>
-        <li><button type="button"><span data-i18n="room.5">Deck</span><em>05</em></button></li>
-        <li><button type="button"><span data-i18n="room.6">Stair</span><em>06</em></button></li>
-        <li><button type="button"><span data-i18n="room.7">Landing</span><em>07</em></button></li>
-        <li><button type="button"><span data-i18n="room.8">Main bedroom</span><em>08</em></button></li>
-        <li><button type="button"><span data-i18n="room.9">Ensuite</span><em>09</em></button></li>
-        <li><button type="button"><span data-i18n="room.10">Studio office</span><em>10</em></button></li>
-        <li><button type="button"><span data-i18n="room.11">Roof terrace</span><em>11</em></button></li>
+        <li><button type="button"><span data-i18n="room.4">Kitchen</span><em>03</em></button></li>
+        <li><button type="button"><span data-i18n="room.8">Main bedroom</span><em>04</em></button></li>
+        <li><button type="button"><span data-i18n="room.11">Roof terrace</span><em>05</em></button></li>
       </ol>
       <div class="card room-media" id="roomMedia">
-        <img src="assets/img/entry-mediterranean.webp" alt="Entry: the glazed front door and the deck beyond, a reading chair by the corner glass, a walnut cabinet under a round mirror that reflects the stair" class="on" loading="lazy">
-        <img src="assets/img/living-mediterranean.webp" alt="Living room: corner sofa and coffee table under three framed prints on the oak wall, full-height glazing with sheer curtains" loading="lazy">
-        <img src="assets/img/dining-mediterranean.webp" alt="Dining: the table for eight in front of the sliding doors, with the deck, the pergola and an olive tree in the garden beyond" loading="lazy">
-        <img src="assets/img/kitchen-mediterranean.webp" alt="Kitchen: the run along the oak wall with its strip window, the turquoise range and the tall oak unit; the living room beyond" loading="lazy">
-        <img src="assets/img/deck-mediterranean.webp" alt="Deck: the south deck under the timber pergola, ivy climbing its posts, the lawn, olive trees and hills beyond" loading="lazy">
-        <img src="assets/img/stair-mediterranean.webp" alt="Stair: both white flights with oak rails along the oak wall, the front door and the garden on the right" loading="lazy">
-        <img src="assets/img/landing-mediterranean.webp" alt="Landing: across the stair void to the oak wall and its tall window, with the door of the studio office on the right" loading="lazy">
-        <img src="assets/img/main-bedroom-mediterranean.webp" alt="Main bedroom: corner glazing with blinds and curtains, the roof terrace and the hills beyond" loading="lazy">
-        <img src="assets/img/ensuite-mediterranean.webp" alt="Ensuite: basin under a round brass mirror beside a tall window, white tiles, a checker floor and the glass shower screen" loading="lazy">
-        <img src="assets/img/studio-office-mediterranean.webp" alt="Studio office: white desk with a monitor and pegboards beside the tall east window and its balcony rail" loading="lazy">
-        <img src="assets/img/roof-terrace-mediterranean.webp" alt="Roof terrace: table and chairs under the louvred pergola, oak cladding on the right, the hills beyond the railing" loading="lazy">
+        <img src="assets/img/entry-b-editorial-v3.webp" alt="Entry: the glazed front door and the deck beyond, a reading chair by the corner glass, a walnut cabinet under a round mirror that reflects the stair" class="on" loading="lazy">
+        <img src="assets/img/living-refined-editorial-v3.webp" alt="Living room: lounge chair and corner sofa around a low table, three framed prints on the oak wall, full-height glazing onto the olive garden" loading="lazy">
+        <img src="assets/img/kitchen-c-editorial-v3.webp" alt="Kitchen: the run along the oak wall with its strip window, the turquoise range and the tall oak unit; the living room beyond" loading="lazy">
+        <img src="assets/video/walk/room-bedroom.jpg" alt="Main bedroom: the bed seen through the open glass door, sheer curtains at the corner glazing and the garden beyond" loading="lazy">
+        <img src="assets/video/walk/room-terrace.jpg" alt="Roof terrace: the deck under the timber pergola with vines on its posts, a table and chairs at the far end, olive trees and wooded hills beyond the railing" loading="lazy">
+        <!-- walkthrough clips, AI-finished over the model's camera path: the selected room's clip fades in over its still and loops
+             (forward then back) while the list is on screen. data-room = row index. Five rooms since 2026-11-15; the other six rows are in archive/.../rooms-removed-2026-11-15.html. -->
+        <video class="room-clip" data-room="0" src="assets/video/walk/room-entry.mp4" poster="assets/video/walk/room-entry.jpg" muted loop playsinline preload="none" aria-hidden="true"></video>
+        <video class="room-clip" data-room="1" src="assets/video/walk/room-living.mp4" poster="assets/video/walk/room-living.jpg" muted loop playsinline preload="none" aria-hidden="true"></video>
+        <video class="room-clip" data-room="2" src="assets/video/walk/room-kitchen.mp4" poster="assets/video/walk/room-kitchen.jpg" muted loop playsinline preload="none" aria-hidden="true"></video>
+        <video class="room-clip" data-room="3" src="assets/video/walk/room-bedroom.mp4" poster="assets/video/walk/room-bedroom.jpg" muted loop playsinline preload="none" aria-hidden="true"></video>
+        <video class="room-clip" data-room="4" src="assets/video/walk/room-terrace.mp4" poster="assets/video/walk/room-terrace.jpg" muted loop playsinline preload="none" aria-hidden="true"></video>
       </div>
     </div>
   </div>
 </section>
 
-<!-- LIFESTYLE -->
-<section class="life gut" id="life">
-  <header class="section-head"><div><p class="label" data-i18n="gal.k">Lifestyle · AI-assisted images</p><h2 data-i18n="gal.t">Show the life, not just the layout.</h2></div>
-    <p class="muted" data-i18n="gal.b">People, light and everyday moments help a client imagine living in the space. These scenes are AI-assisted over the model's camera views: read them as mood, not specification.</p></header>
-  <div class="grid-4">
-    <figure class="tile"><div class="card"><img src="assets/img/hf-14-living-people.jpg" alt="Living room in use, afternoon light" loading="lazy"></div><figcaption data-i18n="gal.1">Living, lived in</figcaption></figure>
-    <figure class="tile"><div class="card"><img src="assets/img/hf-15-dining-people.jpg" alt="Coffee at the dining table" loading="lazy"></div><figcaption data-i18n="gal.3">Dining</figcaption></figure>
-    <figure class="tile"><div class="card"><img src="assets/img/hf-06-stair.jpg" alt="Return stair and the red container doors" loading="lazy"></div><figcaption data-i18n="gal.4">Return stair</figcaption></figure>
-    <figure class="tile"><div class="card"><img src="assets/img/hf-07-main-bedroom.jpg" alt="Main bedroom with west glass" loading="lazy"></div><figcaption data-i18n="gal.6">Main bedroom</figcaption></figure>
+<!-- TOOLS: what the model can become for a seller's sales team, shown on a tablet (the presenter for meetings in the sales
+     office) and a phone (the link the buyer opens afterwards). Both screens run the live model: one WebGL renderer draws
+     both (js/tools.js). Finishes = the four illustrative palettes of #finishes; floors apart and the send-to-buyer
+     notification are the app concept. The devices and the app screens are drawn in CSS (site.css, "tools").
+     Took the place of the Lifestyle section (#life, four AI-assisted editorial tiles) on 2026-11-15, the user's choice;
+     it stood in for #scenes for a moment, and #scenes is back. The Lifestyle markup is in git (8ce4699) and in
+     archive/previous-project-files/bzik-site-unused/lifestyle-section.html. -->
+<section class="tools gut" id="tools">
+  <header class="section-head"><div><p class="label" data-i18n="tl.k">Sales tools · developed per project</p><h2 data-i18n="tl.t">From the sales table to the buyer's phone.</h2></div>
+    <p class="muted" data-i18n="tl.b">The same 3D model can run the tools your sales team uses every day: a tablet presentation for meetings in the sales office, and a link buyers open on their phones afterwards. I design and build each tool around your product and the way you sell.</p></header>
+  <div class="tools-stage" id="toolsStage">
+    <div class="tl-set">
+      <!-- tablet, landscape: the presenter. App layout in points of a 1194 × 834 screen (--u) -->
+      <div class="dev tablet">
+        <span class="dev-shadow" aria-hidden="true"></span>
+        <span class="dev-key k-top" aria-hidden="true"></span><span class="dev-key k-v1" aria-hidden="true"></span><span class="dev-key k-v2" aria-hidden="true"></span>
+        <div class="dev-body"><div class="dev-glass">
+          <div class="scr" data-view="tablet" data-az=".62" data-el=".34" data-fov="30" data-fit="1.16" data-lift=".05" data-spin=".085">
+            <img class="scr-still" src="assets/img/tools-tablet.webp" alt="" width="1616" height="1114" loading="lazy" decoding="async">
+            <canvas class="scr-gl" tabindex="0" aria-label="Tablet presenter: the live 3D model of the house. Drag or use the arrow keys to turn it."></canvas>
+            <div class="sb" aria-hidden="true"><span>10:24</span><span class="sb-i"><svg viewBox="0 0 16 12"><path d="M8 12 5.7 9.6a3.3 3.3 0 0 1 4.6 0Zm-3.6-3.7L3 6.9a7 7 0 0 1 10 0l-1.4 1.4a5 5 0 0 0-7.2 0ZM1.4 5.3 0 3.9a11.3 11.3 0 0 1 16 0l-1.4 1.4a9.3 9.3 0 0 0-13.2 0Z"/></svg><svg viewBox="0 0 27 12"><rect x=".6" y=".6" width="22.6" height="10.8" rx="3.1" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".4"/><rect x="2.3" y="2.3" width="16.4" height="7.4" rx="1.7"/><path d="M24.9 4v4c.8-.3 1.4-1.1 1.4-2s-.6-1.7-1.4-2Z" opacity=".45"/></svg></span></div>
+            <div class="ap-bar">
+              <div class="ap-id"><span class="ap-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="12.6" width="18" height="6.6" rx="1.1"/><rect x="3" y="4.8" width="12.4" height="6.6" rx="1.1"/></svg></span>
+                <span><b data-i18n="tl.app">Container House</b><em data-i18n="tl.app.sub">Demonstration project · 5 × 40 ft HC</em></span></div>
+              <button type="button" class="ap-send" data-send><svg class="go" viewBox="0 0 20 20" aria-hidden="true"><path d="M18 2 8.6 11.4M18 2l-5.8 16-3.6-6.6L2 7.8 18 2Z"/></svg><svg class="ok" viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10.5 4 4 8-9"/></svg><span class="s1" data-i18n="tl.send">Send to buyer</span><span class="s2" data-i18n="tl.sent">Sent</span></button>
+            </div>
+            <div class="ap-dock">
+              <div class="ap-seg" role="group" aria-label="View"><button type="button" data-floors="0" aria-pressed="true" data-i18n="tl.v0">Whole house</button><button type="button" data-floors="1" aria-pressed="false" data-i18n="tl.v1">Floors apart</button></div>
+              <div class="ap-fin"><span class="ap-k"><em data-i18n="tl.fin">Finish</em><b class="tl-fin-name">As designed</b></span>
+                <div class="sw" role="group" aria-label="Finish">
+                  <button type="button" data-fin="0" aria-pressed="true" style="--a:#ECE7DC;--b:#C29A6B"><span data-i18n="cmp.ref">As designed</span></button>
+                  <button type="button" data-fin="1" aria-pressed="false" style="--a:#4B504F;--b:#CFAE78"><span data-i18n="cmp.o1">Charcoal &amp; larch</span></button>
+                  <button type="button" data-fin="2" aria-pressed="false" style="--a:#8D927B;--b:#B58D58"><span data-i18n="cmp.o2">Olive &amp; oak</span></button>
+                  <button type="button" data-fin="3" aria-pressed="false" style="--a:#C98F6C;--b:#7B5B3E"><span data-i18n="cmp.o3">Terracotta &amp; walnut</span></button>
+                  <button type="button" data-fin="4" aria-pressed="false" style="--a:#D8C7A4;--b:#2F3231"><span data-i18n="cmp.o4">Sand &amp; black steel</span></button>
+                </div></div>
+            </div>
+          </div>
+          <i class="dev-cam" aria-hidden="true"></i>
+        </div></div>
+      </div>
+      <!-- phone, portrait: the link the buyer opens. App layout in points of a 393 × 852 screen -->
+      <div class="dev phone">
+        <span class="dev-shadow" aria-hidden="true"></span>
+        <span class="dev-key k-act" aria-hidden="true"></span><span class="dev-key k-v1" aria-hidden="true"></span><span class="dev-key k-v2" aria-hidden="true"></span><span class="dev-key k-pwr" aria-hidden="true"></span>
+        <div class="dev-body"><div class="dev-glass">
+          <div class="scr" data-view="phone" data-az="-.52" data-el=".3" data-fov="34" data-fit="1.34" data-lift=".08" data-spin=".1">
+            <img class="scr-still" src="assets/img/tools-phone.webp" alt="" width="504" height="1096" loading="lazy" decoding="async">
+            <canvas class="scr-gl" tabindex="0" aria-label="The buyer's phone: the same live model. Drag or use the arrow keys to turn it."></canvas>
+            <div class="sb" aria-hidden="true"><span>10:24</span><span class="sb-i"><svg viewBox="0 0 18 12"><rect y="8" width="3" height="4" rx=".8"/><rect x="5" y="5.4" width="3" height="6.6" rx=".8"/><rect x="10" y="2.7" width="3" height="9.3" rx=".8"/><rect x="15" width="3" height="12" rx=".8"/></svg><svg viewBox="0 0 16 12"><path d="M8 12 5.7 9.6a3.3 3.3 0 0 1 4.6 0Zm-3.6-3.7L3 6.9a7 7 0 0 1 10 0l-1.4 1.4a5 5 0 0 0-7.2 0ZM1.4 5.3 0 3.9a11.3 11.3 0 0 1 16 0l-1.4 1.4a9.3 9.3 0 0 0-13.2 0Z"/></svg><svg viewBox="0 0 27 12"><rect x=".6" y=".6" width="22.6" height="10.8" rx="3.1" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".4"/><rect x="2.3" y="2.3" width="16.4" height="7.4" rx="1.7"/><path d="M24.9 4v4c.8-.3 1.4-1.1 1.4-2s-.6-1.7-1.4-2Z" opacity=".45"/></svg></span></div>
+            <i class="ph-cam" aria-hidden="true"></i>
+            <div class="ph-head"><b data-i18n="tl.app">Container House</b><span class="ph-chip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8.6 11.4a3.4 3.4 0 0 0 4.8 0l2.6-2.6a3.4 3.4 0 0 0-4.8-4.8l-1 1M11.4 8.6a3.4 3.4 0 0 0-4.8 0L4 11.2a3.4 3.4 0 0 0 4.8 4.8l1-1"/></svg><span data-i18n="tl.shared">Shared with you</span></span></div>
+            <div class="ph-sheet">
+              <i class="ph-grab" aria-hidden="true"></i>
+              <div class="ph-fin"><span class="ap-k"><em data-i18n="tl.fin">Finish</em><b class="tl-fin-name">As designed</b></span>
+                <div class="sw" role="group" aria-label="Finish">
+                  <button type="button" data-fin="0" aria-pressed="true" style="--a:#ECE7DC;--b:#C29A6B"><span data-i18n="cmp.ref">As designed</span></button>
+                  <button type="button" data-fin="1" aria-pressed="false" style="--a:#4B504F;--b:#CFAE78"><span data-i18n="cmp.o1">Charcoal &amp; larch</span></button>
+                  <button type="button" data-fin="2" aria-pressed="false" style="--a:#8D927B;--b:#B58D58"><span data-i18n="cmp.o2">Olive &amp; oak</span></button>
+                  <button type="button" data-fin="3" aria-pressed="false" style="--a:#C98F6C;--b:#7B5B3E"><span data-i18n="cmp.o3">Terracotta &amp; walnut</span></button>
+                  <button type="button" data-fin="4" aria-pressed="false" style="--a:#D8C7A4;--b:#2F3231"><span data-i18n="cmp.o4">Sand &amp; black steel</span></button>
+                </div></div>
+              <div class="ph-facts"><div><b>5</b><span data-i18n="tl.f1">containers</span></div><div><b>2</b><span data-i18n="tl.f2">storeys</span></div><div><b>29.7 m²</b><span data-i18n="tl.f3">roof terrace</span></div></div>
+              <span class="ph-cta" aria-hidden="true" data-i18n="tl.ask">Ask the sales team</span>
+              <i class="ph-home" aria-hidden="true"></i>
+            </div>
+            <div class="ph-note" aria-hidden="true"><span class="ap-ico"><svg viewBox="0 0 24 24"><rect x="3" y="12.6" width="18" height="6.6" rx="1.1"/><rect x="3" y="4.8" width="12.4" height="6.6" rx="1.1"/></svg></span>
+              <span class="nt-txt"><b data-i18n="tl.app">Container House</b><span data-i18n="tl.nt">Your 3D presentation is ready to explore.</span></span><span class="nt-time" data-i18n="tl.now">now</span></div>
+          </div>
+        </div></div>
+      </div>
+      <!-- callouts: UX notes around the devices, styled like notifications. The cards sit in artboard units (site.css,
+           "callouts"); js/tools.js draws each card's arrow to its live target, so the arrows follow the layout and, in
+           Hebrew, the mirrored app. Hidden on narrow screens, where the three notes under the stage say the same. -->
+      <div class="tl-notes" aria-hidden="true">
+        <svg class="tl-arrows"></svg>
+        <div class="tl-note n-flow" data-note="flow"><i class="tn-ico"><svg viewBox="0 0 20 20"><path d="M18 2 8.6 11.4M18 2l-5.8 16-3.6-6.6L2 7.8 18 2Z"/></svg></i><span><b data-i18n="tl.c1t">Send it to the buyer</b><span data-i18n="tl.c1b">The link lands on their phone.</span></span></div>
+        <div class="tl-note n-drag" data-note="drag"><i class="tn-ico"><svg viewBox="0 0 20 20"><path d="M3.6 9.4a6.5 6.5 0 0 1 11.5-4.1M16.4 10.6a6.5 6.5 0 0 1-11.5 4.1"/><path d="M15.4 1.9v3.8h-3.8M4.6 18.1v-3.8h3.8"/></svg></i><span><b data-i18n="tl.c2t">Drag to turn</b><span data-i18n="tl.c2b">Both screens run the live model.</span></span></div>
+        <div class="tl-note n-floors" data-note="floors"><i class="tn-ico"><svg viewBox="0 0 20 20"><path d="m10 2.6 7.4 3.9L10 10.4 2.6 6.5Z"/><path d="m2.6 10.1 7.4 3.9 7.4-3.9M2.6 13.6l7.4 3.9 7.4-3.9"/></svg></i><span><b data-i18n="tl.c3t">Open the floors</b><span data-i18n="tl.c3b">Every room, seen from above.</span></span></div>
+        <div class="tl-note n-finish" data-note="finish"><i class="tn-ico"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.2"/><path class="f" d="M15.1 4.9a7.2 7.2 0 0 1-10.2 10.2Z"/></svg></i><span><b data-i18n="tl.c4t">Try a finish</b><span data-i18n="tl.c4b">Palettes change on the model.</span></span></div>
+      </div>
+    </div>
+    <p class="tl-hint"><span class="hint-hand" aria-hidden="true"></span><span data-i18n="tl.hint">Live model on both screens · drag to turn</span></p>
+  </div>
+  <!-- the same controls at a size a thumb can use, for phones (the tablet's own dock is too small there) -->
+  <div class="tl-ctl">
+    <div class="tl-seg" role="group" aria-label="View"><button type="button" data-floors="0" aria-pressed="true" data-i18n="tl.v0">Whole house</button><button type="button" data-floors="1" aria-pressed="false" data-i18n="tl.v1">Floors apart</button></div>
+    <div class="sw" role="group" aria-label="Finish">
+      <button type="button" data-fin="0" aria-pressed="true" style="--a:#ECE7DC;--b:#C29A6B"><span data-i18n="cmp.ref">As designed</span></button>
+      <button type="button" data-fin="1" aria-pressed="false" style="--a:#4B504F;--b:#CFAE78"><span data-i18n="cmp.o1">Charcoal &amp; larch</span></button>
+      <button type="button" data-fin="2" aria-pressed="false" style="--a:#8D927B;--b:#B58D58"><span data-i18n="cmp.o2">Olive &amp; oak</span></button>
+      <button type="button" data-fin="3" aria-pressed="false" style="--a:#C98F6C;--b:#7B5B3E"><span data-i18n="cmp.o3">Terracotta &amp; walnut</span></button>
+      <button type="button" data-fin="4" aria-pressed="false" style="--a:#D8C7A4;--b:#2F3231"><span data-i18n="cmp.o4">Sand &amp; black steel</span></button>
+    </div>
+    <b class="tl-fin-name">As designed</b>
+  </div>
+  <ol class="tl-names" hidden><li data-i18n="cmp.ref">As designed</li><li data-i18n="cmp.o1">Charcoal &amp; larch</li><li data-i18n="cmp.o2">Olive &amp; oak</li><li data-i18n="cmp.o3">Terracotta &amp; walnut</li><li data-i18n="cmp.o4">Sand &amp; black steel</li></ol>
+  <div class="tl-feats">
+    <div data-reveal><b>01</b><h3 data-i18n="tl.1t">Tablet presenter</h3><p data-i18n="tl.1b">Turn the house, set the floors apart and switch finishes while you walk the buyer through it, at the table in the sales office.</p></div>
+    <div data-reveal><b>02</b><h3 data-i18n="tl.2t">A link for the buyer</h3><p data-i18n="tl.2b">Send the presentation after the meeting. It opens in the phone's browser, with nothing to install, so the conversation can go on at home.</p></div>
+    <div data-reveal><b>03</b><h3 data-i18n="tl.3t">Built around your sales process</h3><p data-i18n="tl.3b">Your brand, your range and the way buyers reach you. Options, prices and availability can come from your own data.</p></div>
+  </div>
+  <div class="tl-foot">
+    <p class="note" data-i18n="tl.note">Both screens run the live 3D model of this demonstration; the finishes are the four illustrative palettes above. The app screens are a concept: each tool is designed and built for its project.</p>
+    <a class="btn ghost" href="mailto:bzik.david@gmail.com?subject=Sales%20tools"><span data-i18n="tl.cta">Discuss a sales tool</span> <i class="arr">→</i></a>
   </div>
 </section>
 
-<!-- SCENES: looping isometric dioramas, one per moment of the day. A card without a video is a slot still in production. -->
-<section class="scenes gut" id="scenes">
-  <header class="section-head"><div><p class="label" data-i18n="sc.k">Scenes · AI-animated isometrics</p><h2 data-i18n="sc.t">A day in the house, in miniature.</h2></div>
-    <p class="muted" data-i18n="sc.b">Isometric slices of the house with people in them, on a loop. Made for your feed as much as your website.</p></header>
-  <div class="scenes-row" id="scenesRow">
-    <figure class="scene"><div class="card"><video src="assets/video/scene-terrace.mp4" poster="assets/video/scene-terrace-poster.jpg" muted loop playsinline preload="none" data-inview aria-label="Isometric scene: a couple with coffee on the upper terrace"></video></div>
-      <figcaption><span class="num">07:40</span><span data-i18n="sc.1">Coffee on the upper terrace</span></figcaption></figure>
-    <figure class="scene soon"><div class="card"><span data-i18n="sc.soon">In production</span></div>
-      <figcaption><span class="num">13:00</span><span data-i18n="sc.2">Lunch in the kitchen</span></figcaption></figure>
-    <figure class="scene soon"><div class="card"><span data-i18n="sc.soon">In production</span></div>
-      <figcaption><span class="num">19:30</span><span data-i18n="sc.3">Dinner on the deck at dusk</span></figcaption></figure>
-    <figure class="scene soon"><div class="card"><span data-i18n="sc.soon">In production</span></div>
-      <figcaption><span class="num">22:15</span><span data-i18n="sc.4">Reading corner, lights low</span></figcaption></figure>
+<!-- #scenes is off the page for now (2026-11-15, user: "lets remove for now"); its markup is in
+     ../archive/previous-project-files/bzik-site-unused/scenes-section.removed-2026-11-15.html -->
+
+<!-- FILM: the 30 s case-study reel on its own (back on the page 2026-11-15; the ad film and the 60 s cut stay off, their
+     markup is in ../archive/previous-project-files/bzik-site-unused/film-section.removed-2026-11-15.html). Silent, cut
+     from the model's drawings, exploded view and 3D views and the AI-assisted construction and room clips; web copy of
+     Cinematic Concepts/Case Study Reel/reel/out/Container_House_Case_Study_Reel_30s_v3_web.mp4. Click to play only
+     (films() in main.js). The text comes first in the markup and sits in the narrow column beside the card on wide
+     screens. -->
+<section class="film gut" id="film">
+  <div class="film-row film-reel">
+    <div class="film-aside">
+      <p class="label" data-i18n="film.rk">Case-study reel · model, drawings and AI-assisted footage</p>
+      <h2 data-i18n="film.rt">The whole project in 30 seconds.</h2>
+      <p class="muted" data-i18n="film.rb">Everything on this page, cut to half a minute: the site, the drawings at true scale, the structure, the build and the rooms. The drawings, the exploded view and the 3D views come straight from the model; the footage is AI-assisted. It plays without sound, for social feeds or the opening of a meeting.</p>
+    </div>
+    <figure class="film-item film-wide">
+      <div class="card film-card">
+        <video src="assets/video/film/case-study-reel-30s.mp4" poster="assets/video/film/case-study-reel-30s.jpg" playsinline preload="none" aria-label="Case-study reel, 30 seconds without sound: the house in its olive grove and the site measured from above, the plans, sections and elevations on one grid, the exploded view and the 3D model, the build from the first container to the furniture, the rooms, evenings at the house, and the line See it before it's built"></video>
+        <button type="button" class="film-play"><i aria-hidden="true">▶</i><span data-i18n="film.rplay">Play</span><span class="num">0:30</span></button>
+      </div>
+      <figcaption><span data-i18n="film.rc">Case-study reel</span><span class="num">30 s · 16:9</span></figcaption>
+    </figure>
   </div>
 </section>
 
@@ -362,33 +415,35 @@
   <header class="section-head"><div><p class="label" data-i18n="out.k">Deliverables</p><h2 data-i18n="out.t">Choose the views your clients need.</h2></div>
     <p class="muted" data-i18n="out.b">Order one, or combine them. Everything comes from the same model, so drawings, images and films show the same building.</p></header>
   <div class="outs">
-    <div data-reveal><figure class="card out-ex draw"><img src="assets/img/plan-gf-natural-v3.png" alt="Example: ground floor plan drawn from the model" loading="lazy"></figure><b>01</b><h3 data-i18n="out.1t">Drawings</h3><p data-i18n="out.1b">Plans, sections, elevations and assembly drawings, drawn to scale from the model.</p><span>PDF · A3 / A1</span></div>
-    <div data-reveal><figure class="card out-ex"><img src="assets/img/garden-front-mediterranean.webp" alt="Example: the house from the garden by day, rendered from the model" loading="lazy"></figure><b>02</b><h3 data-i18n="out.2t">Exterior images</h3><p data-i18n="out.2b">Day, golden hour and dusk, on your site or a neutral one.</p><span>JPG / PNG · up to 4K</span></div>
-    <div data-reveal><figure class="card out-ex"><img src="assets/img/living-mediterranean.webp" alt="Example: the furnished living room, rendered from the model" loading="lazy"></figure><b>03</b><h3 data-i18n="out.3t">Interior images</h3><p data-i18n="out.3b">Furnished rooms at the model's scale, styled for your audience.</p><span>JPG / PNG · up to 4K</span></div>
+    <div data-reveal><figure class="card out-ex sheet"><img src="assets/img/plan-gf-natural-v4-card.webp" alt="Example: ground floor plan with its furniture (sofa, dining table for eight, kitchen, stair, WC and laundry) and the wraparound deck, drawn from the model" width="1500" height="1125" loading="lazy"></figure><b>01</b><h3 data-i18n="out.1t">Drawings</h3><p data-i18n="out.1b">Plans, sections, elevations and assembly drawings, drawn to scale from the model.</p><span>PDF · A3 / A1</span></div>
+    <div data-reveal><figure class="card out-ex"><img src="assets/img/pergola-ivy-editorial-v3.webp" alt="Example: the house from the garden, an AI-assisted editorial image" loading="lazy"></figure><b>02</b><h3 data-i18n="out.2t">Exterior images</h3><p data-i18n="out.2b">Day, golden hour and dusk, on your site or a neutral one.</p><span>JPG / PNG · up to 4K</span></div>
+    <div data-reveal><figure class="card out-ex"><img src="assets/img/living-refined-editorial-v3.webp" alt="Example: the furnished living room, an AI-assisted editorial image" loading="lazy"></figure><b>03</b><h3 data-i18n="out.3t">Interior images</h3><p data-i18n="out.3b">Furnished rooms at the model's scale, styled for your audience.</p><span>JPG / PNG · up to 4K</span></div>
     <div data-reveal><figure class="card out-ex draw"><a href="#explore" aria-label="Open the interactive 3D viewer"><img src="assets/img/live-3d-cover.jpg" alt="The live 3D model of the redesigned house, as the interactive viewer shows it" loading="lazy"><span class="go"><span data-i18n="out.4go">Open the live model</span><i aria-hidden="true">↑</i></span></a></figure><b>04</b><h3 data-i18n="out.4t">Interactive 3D</h3><p data-i18n="out.4b">The live model above, with your branding, for your website and your meetings.</p><span>Web · embeddable</span></div>
-    <div data-reveal><figure class="card out-ex film"><video src="assets/video/exploded-axo.mp4" poster="assets/video/exploded-axo-poster.jpg" muted loop playsinline preload="none" data-inview aria-label="Example: film of the redesigned house coming apart layer by layer, from roof and solar down to piers and deck, then settling back"></video></figure><b>05</b><h3 data-i18n="out.5t">Assembly film</h3><p data-i18n="out.5b">Piers to roof in one film, so the build order explains itself.</p><span>MP4 · 16:9 + 9:16</span></div>
-    <div data-reveal><figure class="card out-ex"><img src="assets/img/stair-mediterranean.webp" alt="Example: eye-level view of the stair, rendered from the model" loading="lazy"></figure><b>06</b><h3 data-i18n="out.6t">Walkthrough film</h3><p data-i18n="out.6b">An eye-level camera path through every room.</p><span>MP4 · Full HD / 4K · 16:9 + 9:16</span></div>
+    <div data-reveal><figure class="card out-ex film" data-open="assets/video/exploded-axo.mp4" data-poster="assets/video/exploded-axo-poster.jpg" data-ratio="1080/1350"><button type="button" class="out-open" aria-label="Play the assembly film large"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><video src="assets/video/exploded-axo.mp4" poster="assets/video/exploded-axo-poster.jpg" muted loop playsinline preload="none" data-inview aria-label="Example: film of the redesigned house coming apart layer by layer, from roof and solar down to piers and deck, then settling back"></video></figure><b>05</b><h3 data-i18n="out.5t">Assembly film</h3><p data-i18n="out.5b">Piers to roof in one film, so the build order explains itself.</p><span>MP4 · 16:9 + 9:16</span></div>
+    <div data-reveal><figure class="card out-ex"><video src="assets/video/walk/room-stair.mp4" poster="assets/video/walk/room-stair.jpg" muted loop playsinline preload="none" data-inview aria-label="Example: a walkthrough clip climbing the white stair with its oak rails, AI-finished over the model's camera path"></video></figure><b>06</b><h3 data-i18n="out.6t">Walkthrough film</h3><p data-i18n="out.6b">An eye-level camera path through every room.</p><span>MP4 · Full HD / 4K · 16:9 + 9:16</span></div>
   </div>
-  <p class="note" data-i18n="out.note">Every example shown here is drawn or rendered from the 3D model of the demonstration house.</p>
+  <p class="note" data-i18n="out.note">Examples shown: the drawing, the live model and the assembly film come straight from the 3D model. The two stills and the walkthrough clip are finished with AI assistance over its views and camera path.</p>
   <!-- not built into this demonstration: offered as work developed for a client -->
   <p class="label dev-k" data-i18n="dev.k">Beyond this demonstration · developed per project</p>
   <div class="stats dev">
     <div><b data-i18n="dev.1t">Interactive plans</b><span data-i18n="dev.1b">Select a room on the plan to open its layout and its view.</span></div>
-    <div><b data-i18n="dev.2t">Virtual tours</b><span data-i18n="dev.2b">Let clients move through the spaces freely, beyond the guided walkthrough shown here.</span></div>
+    <div><b data-i18n="dev.2t">Virtual tours</b><span data-i18n="dev.2b">Let clients move through the spaces freely, beyond the walkthrough clips shown here.</span></div>
     <div><b data-i18n="dev.3t">Finish configurators</b><span data-i18n="dev.3b">Switch materials and options live on the 3D model, from your own range.</span></div>
     <div><b data-i18n="dev.4t">Mobile and tablet apps</b><span data-i18n="dev.4b">A presentation built for the device your team brings to the meeting.</span></div>
   </div>
 </section>
 
 <!-- HOW -->
-<section class="gut block how-sec" id="how">
-  <header class="how-head"><p class="label" data-i18n="how.k">How it works</p><h2 data-i18n="how.t">From plans to presentation in four steps.</h2></header>
+<section class="block how-sec" id="how" data-theme="dark">
+ <div class="how-card">
+  <header class="section-head"><div><p class="label" data-i18n="how.k">How it works</p><h2 data-i18n="how.t">From plans to presentation in four steps.</h2></div></header>
   <ol class="how" id="howSteps">
     <li><b>01</b><div><h3 data-i18n="how.1t">Start with the question</h3><p data-i18n="how.1b">Tell me what you sell, who you sell it to and where the conversation gets difficult.</p></div></li>
     <li><b>02</b><div><h3 data-i18n="how.2t">Send your plans</h3><p data-i18n="how.2b">PDF, DWG or a dimensioned sketch. You get a fixed scope, a quote and dates before work starts.</p></div></li>
     <li><b>03</b><div><h3 data-i18n="how.3t">Approve the model</h3><p data-i18n="how.3b">Check the 3D model against your drawings before a single image is made.</p></div></li>
     <li><b>04</b><div><h3 data-i18n="how.4t">Present</h3><p data-i18n="how.4b">Images, films and interactive files, sized for your meetings, your website and your clients' own devices.</p></div></li>
   </ol>
+ </div>
 </section>
 
 <!-- PACKAGES -->
@@ -423,12 +478,15 @@
     <p class="muted" data-i18n="ab.b2">From architectural images and exploded-view animations to custom applications for mobile and tablet, I build each presentation around the questions your customers need answered.</p>
   </div>
 </section>
+
+<!-- quick access to the live 3D viewer: a floating button from the end of the hero on, hidden while #explore is on screen (js fab3d) -->
+<a class="fab-3d" href="#explore" aria-label="Open the live 3D model"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 7.4v9.2L12 21.2 4 16.6V7.4Z"/><path d="M4 7.4 12 12l8-4.6M12 12v9.2"/></svg><span data-i18n="nav.explore">Live 3D</span></a>
 </main>
 
 <!-- CLOSER -->
 <section class="closer inset" id="contact" data-theme="dark">
   <div class="card closer-card">
-    <img src="assets/img/ed-l03-east-deck.jpg" alt="The east deck and upper terrace among the trees (AI-assisted concept image)" width="1536" height="1024" loading="lazy">
+    <img src="assets/img/deck-b-editorial-v3-2560.webp" srcset="assets/img/deck-b-editorial-v3.webp 1536w, assets/img/deck-b-editorial-v3-2560.webp 2560w" sizes="100vw" alt="The south deck under the timber pergola: sliding glass on the left, the lawn, olive trees and hills beyond (AI-assisted editorial image over a render of the model)" width="2560" height="1707" loading="lazy">
     <div class="closer-copy">
       <p class="label" data-i18n="ct.k">Discuss your project</p>
       <h2 data-i18n="ct.t">What part of your product is hardest to explain to customers?</h2>
