@@ -33,15 +33,18 @@ js/
   tools.js        sales tools (#tools): the tablet and phone screens, both drawn by one WebGL renderer
 assets/
   img/            renders, drawings and fallbacks
-  assembly/       frames of the previous journey (assembly); no longer loaded
-  tour_v12/       frames of the previous journey (walkthrough); no longer loaded
-  models/         house-redesigned-v2.glb for the 3D viewer (its two predecessors are kept beside it, unused)
-  video/          assembly film, the exploded-view loop and the terrace scene loop
+  models/         house-redesigned-v2.glb for the 3D viewer
+  video/          the exploded-view film and its poster
   video/walk/     the walkthrough clips (hero, rooms, exterior, #work comparison) and their posters
   video/film/     #film: the 30 s case-study reel (on the page); "A Week, Slowly" (60 s, 30 s vertical) and the 60 s case-study film (off the page), with posters
   brand/          logo
 tools/            dev helpers (render and editorial image import, fallback image capture)
 ```
+
+Files the page no longer loads are not kept in the repo. On 2026-11-16 the last of them (the frames of the previous
+journey, earlier renders and drawings, an earlier 3D model, the assembly and terrace films) moved to
+`../archive/previous-project-files/bzik-site-unused/` beside this folder, under the same paths; the git history still
+has them (up to `c39d1e7`).
 
 ## The copy
 
@@ -145,14 +148,14 @@ white override; plans and sections are really cut, as the 11 Nov exporter did) i
 `drawings/compose_ink.py` into `drawings/web_ink_v1` (all twelve views exist there). On the upper-floor plan the decks
 of the floor below appear as a dashed outline, traced from the ground plan's deck layer. The cut-away views slice
 everything that crosses the cut; curves that cross it (the rainwater downpipes) are left out.
-The same views in the earlier "natural materials" look stay in `assets/img/` (`*-natural-v4.png`: plans without plants
-and the four isometric views, from `drawings/compose_web.py`; `*-natural-v3.png`: sections, elevations and the plans
-with plants), unused.
+The same views in the earlier "natural materials" look are unused: `*-natural-v4.png` (plans without plants and the
+four isometric views, from `drawings/compose_web.py`) stays in the local folder but not in the repo; `*-natural-v3.png`
+(sections, elevations and the plans with plants) moved to the archive on 2026-11-16.
 The caption in the card's corner comes from the `tags` array in `scroll.js`, one entry per row of `#planList`. The
 room names inside the plans are English only.
-Still in `assets/img/` and no longer referenced: the first set of these drawings on cream paper, with plants
-(`*-natural.png`), and the earlier photoreal plans and sections (`plan-gf.png`, `plan-uf.png`, `sec-aa.png`,
-`sec-bb.png`).
+No longer referenced either: the first set of these drawings on cream paper, with plants (`*-natural.png`, local
+folder only), and the earlier photoreal plans and sections (`plan-gf.png`, `plan-uf.png`, `sec-aa.png`, `sec-bb.png`),
+which moved to the archive on 2026-11-16.
 
 The cover of the "Interactive 3D" card (`assets/img/live-3d-cover.jpg`) is a capture of the viewer's own canvas
 (`drawings/make_viewer_cover.py` trims and frames it); the card links up to `#explore`. It was captured from the
@@ -174,8 +177,8 @@ camera as `drawings/build_views.py` Elev_South). Made by `drawings/render_finish
 on the exterior cladding, oak panels and pergola timber; SW sun; neutral sky in reflections) and
 `drawings/compose_finishes_photo.py --ground` (masters in `drawings/finishes_cycles_v1`, web copies in
 `drawings/web_finishes_photo_v1`). Because the images are transparent, `.cmp-top` carries the card colour so the
-selected finish never blends with the as-designed image under it. The drawn versions (`finish-south-*.webp`) stay in
-the folder, unused.
+selected finish never blends with the as-designed image under it. The drawn versions (`finish-south-*.webp`) moved to
+the archive on 2026-11-16.
 
 ## The room images
 
@@ -184,8 +187,8 @@ ensuite, studio office and roof terrace. Nine show editorial images (next sectio
 the main bedroom or the roof terrace, so since 2026-11-15 those two rows use the first frame of their own walkthrough
 clip as the still (`assets/video/walk/room-bedroom.jpg`, `room-terrace.jpg`, 1280×720) and are shown by the clip only:
 the user asked for the final page to use no photograph from outside the set. Until then they showed Cycles renders of
-the redesigned house at 2048×1365 (`assets/img/*-mediterranean.webp`). Renders exist for all eleven rows and stay in
-`assets/img/`. They come from the model project: `scripts/room_stills_build.py` puts the house on
+the redesigned house at 2048×1365 (`assets/img/*-mediterranean.webp`). Renders exist for all eleven rows; they moved to
+the archive on 2026-11-16. They come from the model project: `scripts/room_stills_build.py` puts the house on
 the landscape and daylight of the hero image and adds one level camera per row from `room-stills/cameras.json`
 (1.48 m above the floor); `scripts/room_stills_render.py` renders them, and five of the ten on the page came from a
 second batch with the same cameras (`realistic-renders/render_batch.py`; `room-stills/selected/sources.json` names
@@ -194,7 +197,7 @@ project has the details. The main bedroom is the render the list already had, fr
 The row order follows the plans: ground floor, stair, upper floor. The plans also label a WC / laundry, a walk-in and
 a bath, which have no row. Row names are the `room.N` keys. To change a view, edit its camera in `cameras.json`,
 render that shot again and save it under a new file name.
-The `hf-*.jpg` images they replaced are still in `assets/img/`.
+The `hf-*.jpg` images they replaced moved to the archive on 2026-11-16.
 
 ## The editorial images
 
@@ -225,9 +228,10 @@ tools on 2026-11-15, and the four files stay in `assets/img/`, unused.
 
 The hero, the exterior section and nine of the rooms play a walkthrough clip over their still (see "The walkthrough
 clips"). The clips were finished with the Olive Grove v2 images as reference, before v3 existed. The images they
-replaced stay in `assets/img/`: the Olive Grove v2 files (`<view>-editorial.webp`,
+replaced are off the page: the Olive Grove v2 files (`<view>-editorial.webp`,
 `-editorial-2560.webp`, made by the same script with `--src "…/Architectural Editorial - Olive Grove v2" --suffix ""`),
-the `*-mediterranean.webp` renders, `hf-*.jpg`, `ed-l0*.jpg` and `clay-*.jpg`.
+which stay in the local folder but not in the repo; the `*-mediterranean.webp` renders, `hf-*.jpg`, `ed-l0*.jpg`
+and `clay-*.jpg` moved to the archive on 2026-11-16.
 
 ## The 3D viewer
 
