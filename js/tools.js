@@ -1,9 +1,11 @@
-// Sales tools (#tools): a tablet and a phone that both run the live 3D model of the house.
-// One WebGL renderer draws both screens. Each frame it renders the tablet view and the phone view into two regions of
-// one offscreen canvas and copies each region into that screen's own 2D canvas, so the model is downloaded, parsed and
-// kept on the GPU once. Each screen has its own camera (drag it; it idles on a slow turntable). What the presenter
-// changes on the tablet (finish, floors apart) is shared, so the buyer's phone follows it. The sun's shadow map is
-// drawn only when the geometry moves (floors apart), never just because a camera turns.
+// Sales tools (#tools): a tablet that runs the sales presentation (presentation/index.html in an iframe, made by
+// js/main.js deckTablet) and a phone, the buyer's side, that runs the live 3D model of the house.
+// The phone's model is drawn by one WebGL renderer into an offscreen canvas and copied into the screen's 2D canvas (the
+// renderer was shared by two screens until the tablet took the presentation, 2026-11-17; it still takes a list of
+// views). Drag it; it idles on a slow turntable. What the seller does in the deck reaches the phone: the deck posts
+// {deck:'finish', i} (a palette on its Colours slide), {deck:'floors', on} (its 3D view), {deck:'send'} ("Send to
+// buyer" in its app bar) and {deck:'slide', n}, same origin only. The sun's shadow map is drawn only when the geometry
+// moves (floors apart), never just because the camera turns.
 import * as THREE from 'three';
 
 const MODEL = 'assets/models/house-redesigned-v2.glb?v=1';   // same URL as main.js, so the browser reuses that download
@@ -48,15 +50,15 @@ export function initTools() {
   const stage = document.getElementById('toolsStage');
   if (!stage) return;
   const section = stage.closest('section');
-  const screens = [...stage.querySelectorAll('.scr[data-view]')];
+  const screens = [...stage.querySelectorAll('.scr[data-view]')];   // the phone (the tablet's screen is the deck)
+  const deckScr = stage.querySelector('.scr.deck');
   const state = { finish: 0, floors: 0, floorsAt: 0, floorsFrom: 0, floorsT: 1, colorT: 1 };
   let ctx3d = null;                                   // set once the model is in
 
-  /* ---------- controls: tablet dock, phone sheet and the narrow-screen row share one state ---------- */
+  /* ---------- controls: the deck, the phone's sheet and the narrow-screen row share one state ---------- */
   const names = [...section.querySelectorAll('.tl-names li')];
   const finBtns = [...section.querySelectorAll('[data-fin]')];
   const viewBtns = [...section.querySelectorAll('[data-floors]')];
-  const sendBtns = [...section.querySelectorAll('[data-send]')];
   const nameOuts = [...section.querySelectorAll('.tl-fin-name')];
   const note = section.querySelector('.ph-note');
   function showName() { nameOuts.forEach(o => o.textContent = names[state.finish]?.textContent || ''); }
@@ -74,24 +76,35 @@ export function initTools() {
     state.floors = on; state.floorsFrom = state.floorsAt; state.floorsT = 0;
     ctx3d?.kick();
   }
-  let noteTimer = 0, sentTimer = 0;
-  function send() {
-    sendBtns.forEach(b => b.classList.add('sent'));
-    clearTimeout(sentTimer); sentTimer = setTimeout(() => sendBtns.forEach(b => b.classList.remove('sent')), 2400);
+  let noteTimer = 0;
+  function send() {                                   // the deck's "Send to buyer": the link lands on the phone
     if (note) {
       note.classList.remove('show'); void note.offsetWidth; note.classList.add('show');
       clearTimeout(noteTimer); noteTimer = setTimeout(() => note.classList.remove('show'), 4200);
     }
-    ctx3d?.follow();                                   // the phone turns to the angle the tablet shows
+    ctx3d?.follow();                                   // and the phone's view turns back to where it opens
   }
   finBtns.forEach(b => b.addEventListener('click', () => setFinish(+b.dataset.fin)));
   viewBtns.forEach(b => b.addEventListener('click', () => setFloors(+b.dataset.floors)));
-  sendBtns.forEach(b => b.addEventListener('click', send));
   showName();
   new MutationObserver(showName).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
+  /* ---------- the deck on the tablet: what the seller does there reaches the phone ---------- */
+  const deckWin = () => deckScr?.querySelector('iframe')?.contentWindow;
+  addEventListener('message', e => {
+    const d = e.data;
+    if (e.origin !== location.origin || !d || !d.deck || e.source !== deckWin()) return;
+    if (d.deck === 'send') send();
+    else if (d.deck === 'finish') setFinish(clamp(+d.i || 0, 0, FINISHES.length - 1));
+    else if (d.deck === 'floors') setFloors(d.on);
+    else if (d.deck === 'slide') notes.redraw();      // the arrows into the deck follow its slide
+  });
+
   /* ---------- the devices rise into place, then the callouts; the link arrives once, the first time they are seen ---------- */
   const notes = callouts(stage);
+  // the deck's own layout settles after its frame has loaded (fonts, images): draw the arrows into it again then
+  if (deckScr) new MutationObserver(() => deckScr.querySelector('iframe')?.addEventListener('load', () => notes.redraw(), { once: true }))
+    .observe(deckScr, { childList: true });
   if ('IntersectionObserver' in window && !DEBUG) {
     if (!reduce) stage.classList.add('pre', 'npre');
     const io = new IntersectionObserver(es => {
@@ -121,13 +134,15 @@ function webglOK() {
 // Leaders are straight orthogonal runs only (2026-11-15, user: "only straight orthogonal lines"): one straight line
 // when card and target share a band of x or y, otherwise one right-angle elbow that leaves the card from the side
 // facing the target and turns once into it.
-// to = the target; at = a point inside it (fractions of its box), else the line ends on the target's facing edge;
-// first = optional [en, he] axis the line leaves the card on ('h' or 'v'), to override the automatic choice.
+// to = the target on the page, or deck = the target inside the presentation on the tablet (same origin, so its
+// document can be read; a target on a slide that is not shown counts as missing); at = a point inside it (fractions of
+// its box), else the line ends on the target's facing edge; first = optional [en, he] axis the line leaves the card on
+// ('h' or 'v'), to override the automatic choice. A card with no target left fades out (.off).
 const ARROWS = {
-  flow:   [{ to: '.tablet .ap-send' }, { to: '.phone .scr', at: [.5, 0] }],
-  drag:   [{ to: '.tablet .scr', at: [.42, .5] }],
-  floors: [{ to: '.tablet [data-floors="1"]' }],
-  finish: [{ to: '.tablet .ap-dock .sw' }],
+  flow:   [{ deck: '#sendBtn' }, { to: '.phone .scr', at: [.5, 0] }],
+  drag:   [{ deck: '#asmView', at: [.36, .36] }],                // the upper floor's west end, level with the card
+  floors: [{ deck: '#viewSeg [data-view="apart"]' }],
+  slides: [{ deck: '#nextBtn' }],
 };
 // Orthogonal route from card box c to target box t (or point P inside it): polyline points from the card edge to the
 // target, 2 points when straight, 3 with an elbow.
@@ -151,21 +166,37 @@ function callouts(stage) {
   if (!wrap) return { show() {} };
   const set = stage.querySelector('.tl-set'), svg = wrap.querySelector('.tl-arrows');
   const cards = [...wrap.querySelectorAll('.tl-note[data-note]')];
+  const frame = () => set.querySelector('.scr.deck iframe');
   const f1 = v => v.toFixed(1);
   let timer = 0;
+  // an element inside the deck, in the page's coordinates: its box in the frame's viewport, moved by the frame's own
+  // place and scaled by the frame's size on screen over its layout size (1 unless something scales it)
+  function inDeck(sel) {
+    const f = frame(); if (!f) return null;
+    let el; try { el = f.contentDocument?.querySelector(sel); } catch (e) { return null; }
+    if (!el || !el.offsetWidth) return null;
+    const sl = el.closest('.slide'); if (sl && !sl.classList.contains('active')) return null;   // not on the slide shown
+    if (getComputedStyle(el).display === 'none') return null;
+    const fr = f.getBoundingClientRect(), k = fr.width / (f.clientWidth || fr.width), r = el.getBoundingClientRect();
+    return { left: fr.left + (f.clientLeft + r.left) * k, top: fr.top + (f.clientTop + r.top) * k, width: r.width * k, height: r.height * k };
+  }
   function draw() {
     timer = 0;
     if (!wrap.offsetWidth) return;                                   // hidden on narrow screens
     const o = set.getBoundingClientRect(), W = set.offsetWidth, H = set.offsetHeight, s = W / (o.width || W);
-    const box = el => { const r = el.getBoundingClientRect(); return { x: (r.left - o.left) * s, y: (r.top - o.top) * s, w: r.width * s, h: r.height * s }; };
+    const box = r => ({ x: (r.left - o.left) * s, y: (r.top - o.top) * s, w: r.width * s, h: r.height * s });
     const rtl = document.documentElement.dir === 'rtl';
     const unit = (p, q) => { const dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy) || 1; return [dx / l, dy / l]; };
     let out = '';
     cards.forEach((card, ci) => {
-      const c = box(card);
+      const c = box(card.getBoundingClientRect());
+      let drawn = 0;
       (ARROWS[card.dataset.note] || []).forEach((a, ai) => {
-        const el = set.querySelector(a.to); if (!el || !el.offsetWidth) return;
-        const t = box(el);
+        let r = null;
+        if (a.deck) r = inDeck(a.deck);
+        else { const el = set.querySelector(a.to); if (el && el.offsetWidth) r = el.getBoundingClientRect(); }
+        if (!r) return;
+        const t = box(r);
         const P = a.at ? [t.x + a.at[0] * t.w, t.y + a.at[1] * t.h] : null;
         const pts = route(c, t, P, a.first && a.first[rtl ? 1 : 0]);
         const n = pts.length, u0 = unit(pts[0], pts[1]), u = unit(pts[n - 2], pts[n - 1]);   // first and last leg
@@ -181,7 +212,9 @@ function callouts(stage) {
         out += `<path class="ln" pathLength="1" style="transition-delay:${d.toFixed(2)}s" d="M${pts.map(p => `${f1(p[0])} ${f1(p[1])}`).join('L')}"/>`
           + `<path class="hd" style="transition-delay:${(d + .6).toFixed(2)}s" d="M${f1(h1[0])} ${f1(h1[1])}L${f1(e0[0])} ${f1(e0[1])}L${f1(h2[0])} ${f1(h2[1])}"/>`
           + `<circle class="dt" style="transition-delay:${d.toFixed(2)}s" cx="${f1(s0[0])}" cy="${f1(s0[1])}" r="2.4"/>`;
+        drawn++;
       });
+      card.classList.toggle('off', !drawn);
     });
     svg.setAttribute('viewBox', `0 0 ${f1(W)} ${f1(H)}`);
     svg.innerHTML = out;
@@ -192,7 +225,7 @@ function callouts(stage) {
   document.fonts?.ready.then(later);
   stage.querySelectorAll('.dev').forEach(d => d.addEventListener('transitionend', later));
   // first draw with the arrows still hidden, then lift .npre so the cards rise and the lines draw themselves
-  return { show() { draw(); setTimeout(() => stage.classList.remove('npre'), 40); } };
+  return { show() { draw(); setTimeout(() => stage.classList.remove('npre'), 40); }, redraw: later };
 }
 
 async function start(stage, screens, state) {
@@ -293,7 +326,7 @@ async function start(stage, screens, state) {
     const cv = el.querySelector('canvas.scr-gl');
     const d = el.dataset;
     return { el, cv, ctx: cv.getContext('2d'), cam: new THREE.PerspectiveCamera(+d.fov || 28, 1, .5, 400),
-      az: +d.az, elv: +d.el, fit: +d.fit || 1, lift: +d.lift || 0, spin: +d.spin || .09,
+      az: +d.az, elv: +d.el, az0: +d.az, el0: +d.el, fit: +d.fit || 1, lift: +d.lift || 0, spin: +d.spin || .09,
       vel: 0, idleAt: 0, drag: null, w: 1, h: 1, y: 0, follow: null };
   });
   let scale = Math.min(devicePixelRatio || 1, 2), W = 1, Hgl = 1;
@@ -387,7 +420,7 @@ async function start(stage, screens, state) {
     }
     views.forEach(v => {
       if (v.drag) { moving = true; return; }
-      if (v.follow) {                                   // eases to the tablet's angle after "send"
+      if (v.follow) {                                   // eases back to its opening angle after "send"
         const f = v.follow; f.t = Math.min(1, f.t + dt / 1.4); const t = ease(f.t);
         v.az = f.az0 + (f.az1 - f.az0) * t; v.elv = f.el0 + (f.el1 - f.el0) * t;
         if (f.t >= 1) { v.follow = null; v.idleAt = now + 2500; }
@@ -416,10 +449,12 @@ async function start(stage, screens, state) {
     }
     renderer.setScissorTest(false);
   }
-  function follow() {
-    const [tab, ph] = views; if (!tab || !ph) return;
-    let az1 = tab.az; while (az1 - ph.az > Math.PI) az1 -= 2 * Math.PI; while (az1 - ph.az < -Math.PI) az1 += 2 * Math.PI;
-    ph.vel = 0; ph.follow = { t: 0, az0: ph.az, az1, el0: ph.elv, el1: tab.elv }; kick();
+  function follow() {                                  // "sent": each view eases back to the angle it opens on
+    views.forEach(v => {
+      let az1 = v.az0; while (az1 - v.az > Math.PI) az1 -= 2 * Math.PI; while (az1 - v.az < -Math.PI) az1 += 2 * Math.PI;
+      v.vel = 0; v.follow = { t: 0, az0: v.az, az1, el0: v.elv, el1: v.el0 };
+    });
+    kick();
   }
 
   new ResizeObserver(layout).observe(stage);

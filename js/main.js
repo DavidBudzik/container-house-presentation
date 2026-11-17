@@ -1,4 +1,4 @@
-import { setLang, initialLang } from './i18n.js?v=38';
+import { setLang, initialLang } from './i18n.js?v=42';
 
 // exported from Redesign\Container_House_Redesigned.blend by web-model/export_glb_viewer_v2.py: house only, no garden and
 // no plants, every material as the flat colour Cycles measures for it. Kept next to it: house-redesigned.glb (the first
@@ -22,7 +22,7 @@ async function boot() {
   let axo = null, explore = null;
   if (webglOK()) {
     try {
-      const { createAxo } = await import('./axo.js?v=30');
+      const { createAxo } = await import('./axo.js?v=32');
       axo = createAxo(exploreCanvas, { mode: 'story', fit: 1.2, model: MODEL, sheets: false, look: 'real' });
       explore = (await import('./explore.js?v=7')).initExplore(axo);
     } catch (e) {
@@ -196,6 +196,78 @@ function outLightbox() {
 }
 outLightbox();
 
+// Deliverable 02: the exterior renders cycle in their card (every 3.6 s while it is on screen, held while the pointer
+// or the focus is on it, never with reduced motion); ‹ › step through them, and a click opens them large in a dialog
+// with ← → keys, swipe, the caption and the count. The dialog is built on first use.
+function outGallery() {
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-gallery]').forEach(card => {
+    const imgs = [...card.querySelectorAll('img')], dots = [...card.querySelectorAll('.g4-dots i')];
+    let i = 0, timer = 0, seen = false, held = false;
+    const show = k => {
+      i = (k + imgs.length) % imgs.length;
+      imgs.forEach((im, n) => im.classList.toggle('on', n === i)); dots.forEach((d, n) => d.classList.toggle('on', n === i));
+    };
+    const tick = () => { clearTimeout(timer); if (seen && !held && !still) timer = setTimeout(() => { show(i + 1); tick(); }, 3600); };
+    show(0);
+    card.querySelector('.g4-prev')?.addEventListener('click', e => { e.stopPropagation(); show(i - 1); tick(); });
+    card.querySelector('.g4-next')?.addEventListener('click', e => { e.stopPropagation(); show(i + 1); tick(); });
+    card.addEventListener('pointerenter', () => { held = true; tick(); });
+    card.addEventListener('pointerleave', () => { held = false; tick(); });
+    card.addEventListener('focusin', () => { held = true; tick(); });
+    card.addEventListener('focusout', () => { held = false; tick(); });
+    if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { seen = e.isIntersecting; tick(); }, { threshold: .4 }).observe(card);
+    // opened large, the card holds still (it shows what the dialog shows) until the dialog closes
+    card.addEventListener('click', e => {
+      if (e.target.closest('.g4-nav')) return;
+      held = true; tick(); galleryBox(card, i, show, () => { held = card.matches(':hover'); tick(); });
+    });
+  });
+}
+let galDlg = null;
+function galleryBox(card, start, onMove, onClose) {
+  const imgs = [...card.querySelectorAll('img')];
+  if (!galDlg) {
+    galDlg = document.createElement('dialog'); galDlg.className = 'lightbox lb-gal';
+    galDlg.innerHTML = '<div class="lb-frame"><img alt=""></div><p class="lb-cap" aria-live="polite"></p>'
+      + '<button type="button" class="lb-step prev" aria-label="Previous"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 4-6 6 6 6"/></svg></button>'
+      + '<button type="button" class="lb-step next" aria-label="Next"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 4 6 6-6 6"/></svg></button>'
+      + '<button type="button" class="lb-close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>';
+    document.body.append(galDlg);
+    galDlg.querySelector('.lb-close').addEventListener('click', () => galDlg.close());
+    galDlg.addEventListener('click', e => { if (e.target === galDlg) galDlg.close(); });
+    galDlg.addEventListener('close', () => { window.__lenis?.start?.(); galDlg.done?.(); galDlg.done = null; });
+  }
+  galDlg.done = onClose;
+  const pic = galDlg.querySelector('.lb-frame img'), cap = galDlg.querySelector('.lb-cap');
+  const say = card.querySelector('.g4-cap')?.textContent.trim() || '';
+  const rtl = () => document.documentElement.dir === 'rtl';
+  let i = start;
+  const show = k => {
+    i = (k + imgs.length) % imgs.length;
+    const im = imgs[i], nx = imgs[(i + 1) % imgs.length];
+    pic.src = im.dataset.full || im.src; pic.alt = im.alt;
+    cap.textContent = `${i + 1} / ${imgs.length}` + (say ? ` · ${say}` : '');
+    new Image().src = nx.dataset.full || nx.src;                     // the next one loads while this one is looked at
+    onMove?.(i);
+  };
+  galDlg.querySelector('.prev').onclick = () => show(i - 1);
+  galDlg.querySelector('.next').onclick = () => show(i + 1);
+  galDlg.onkeydown = e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault(); show(i + ((e.key === 'ArrowRight') !== rtl() ? 1 : -1));
+  };
+  let x0 = null;
+  galDlg.ontouchstart = e => { x0 = e.touches.length === 1 ? e.touches[0].clientX : null; };
+  galDlg.ontouchend = e => {
+    if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) show(i + ((dx < 0) !== rtl() ? 1 : -1));
+  };
+  show(i);
+  window.__lenis?.stop?.(); galDlg.showModal();
+}
+outGallery();
+
 // Floating button to the live 3D viewer: shown once the hero has scrolled away, hidden again while the viewer itself
 // (#explore) is on screen, so it never covers the thing it points to.
 function fab3d() {
@@ -207,3 +279,61 @@ function fab3d() {
   new IntersectionObserver(([e]) => { atViewer = e.isIntersecting; sync(); }, { threshold: .25 }).observe(ex);
 }
 fab3d();
+
+// #tools: the sales presentation (presentation/index.html) runs live in the tablet's screen, opened on its live 3D
+// model (?mode=inline#4), which builds itself once the tablet is in view. The iframe is made when the section comes near
+// the screen and fades in over the poster once loaded. Under 760 px the screen is too small to use: the poster stays and
+// a tap opens the full screen. What the seller does in the deck reaches the phone through js/tools.js.
+function deckTablet() {
+  const scr = document.getElementById('deckScreen'); if (!scr) return;
+  const narrow = matchMedia('(max-width: 760px)');
+  let io = null;
+  const live = () => !!scr.querySelector('iframe');
+  const arm = () => {                                     // again on every change across 760 px (a turned tablet, a resized window)
+    scr.classList.toggle('static', narrow.matches && !live());
+    if (narrow.matches || io || live()) return;
+    io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return; io.disconnect();
+      const f = document.createElement('iframe');
+      f.src = scr.dataset.src; f.title = 'Sales presentation, live on the tablet';
+      f.allow = 'fullscreen';
+      f.addEventListener('load', () => scr.classList.add('live'), { once: true });
+      scr.append(f); scr.classList.remove('static');
+    }, { rootMargin: '900px 0px' });
+    io.observe(scr);
+  };
+  narrow.addEventListener?.('change', arm);
+  arm();
+}
+deckTablet();
+
+// The presentation full screen in a dialog, at the slide the tablet shows (its address ends in #n). The iframe is made
+// on open and dropped on close, so the deck's videos and its WebGL model never keep running behind the page. While the
+// deck has the focus, Esc reaches the deck and not the dialog, so the deck posts {deck:'close'} up (same origin only).
+function deckBox() {
+  const dlg = document.getElementById('deckLb'), openers = document.querySelectorAll('[data-deck]');
+  if (!dlg || !openers.length) return;
+  const slot = dlg.querySelector('.dk-frame'), tab = dlg.querySelector('.dk-tab');
+  const close = () => { if (dlg.open) dlg.close(); };
+  const slideNow = () => {
+    try { const h = document.querySelector('#deckScreen iframe')?.contentWindow.location.hash; if (/^#\d+$/.test(h || '')) return h; } catch (e) {}
+    return '#4';                                                           // the tablet opens on the live 3D model
+  };
+  const open = () => {
+    const at = slideNow();
+    if (!slot.firstElementChild) {
+      const f = document.createElement('iframe');
+      f.src = dlg.dataset.src + at; f.title = dlg.querySelector('.dk-t b')?.textContent || 'Interactive presentation';
+      f.allow = 'fullscreen'; f.setAttribute('allowfullscreen', '');
+      f.addEventListener('load', () => { try { f.contentWindow.focus(); } catch (e) {} });
+      slot.append(f);
+    }
+    if (tab) tab.href = tab.getAttribute('href').split('#')[0] + at;
+    window.__lenis?.stop?.(); dlg.showModal(); slot.firstElementChild.focus();
+  };
+  openers.forEach(b => b.addEventListener('click', open));
+  dlg.querySelector('.lb-close').addEventListener('click', close);
+  dlg.addEventListener('close', () => { slot.replaceChildren(); window.__lenis?.start?.(); });
+  addEventListener('message', e => { if (e.origin === location.origin && e.data && e.data.deck === 'close') close(); });
+}
+deckBox();

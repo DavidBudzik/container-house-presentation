@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Container House · Sales presentation</title>
+<!-- The seller's presentation of the Container House demonstration project: a tablet tool a sales team uses with a
+     buyer to show the house before it is built (the plans, the live 3D model, the rooms, a walkthrough, the colours and
+     materials, how it is built, what is included, next steps and a QR code to take it home). 12 slides on a 1194 x 834
+     stage (a landscape tablet screen) scaled to the window, in the site's own look. Modes, from the query string:
+       ?mode=inline  the tablet in the site's #tools section: page scroll stays with the page (Ctrl/Cmd + wheel
+                     zooms the 3D), opened on the 3D slide (#4); a "Send to buyer" button shows in the app bar, and the
+                     deck posts {deck:'slide'|'finish'|'floors'|'send'} up, so the page's phone follows it (js/tools.js)
+       ?mode=full    the full-screen dialog of that section: Esc closes it (the deck posts {deck:'close'} to the page)
+       (none)        the page on its own
+     Since 2026-11-17 evening the cover, At a glance, Outside, Materials and Next steps show four Cycles renders of the
+     model (Blender Render/16-11-2026/outdoor-front-01..04.png, web copies assets/img/render-*.jpg).
+     History: started 2026-11-17 from tools/container-presentation/ on bzik-white-label.netlify.app (a pitch for the
+     visualization service, on the first v12 house); the same day moved to the redesign, redrawn in the site's look and,
+     on the user's "its for sellers ... a helper tool for sellers to show their houses before their built", rewritten for
+     buyers. README.md, "The interactive presentation", has the slide map and the sources of every fact. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+:root{
+  --canvas:#FFFFFF; --ink:#1B1B1B; --ink-2:#5E5E5E; --ink-3:#7A7A7A; --faint:#C9C9C9;
+  --line:#E4E4E4; --line-soft:#F0F0F0; --tint:#F4F4F3; --slate:#2F3A44; --night:#111315;
+  --ease:cubic-bezier(0.2,0,0,1); --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#E9E9E7;color:var(--ink);font-family:'Inter Tight','Helvetica Neue',Arial,sans-serif;
+  font-weight:300;letter-spacing:.01em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html.inline,html.inline body{background:var(--canvas)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;letter-spacing:inherit}
+img{display:block}
+ol,ul{list-style:none}
+b,strong{font-weight:500}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.stage{position:absolute;left:50%;top:50%;width:1194px;height:834px;transform:translate(-50%,-50%) scale(var(--s,.5));transform-origin:center;
+  background:var(--canvas);overflow:hidden}
+html.full .stage,html.page .stage{border-radius:14px;box-shadow:0 24px 60px -28px rgba(0,0,0,.3)}
+.slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .4s var(--ease),visibility .4s}
+.slide.active{opacity:1;visibility:visible}
+.body{position:absolute;inset:60px 0 64px;padding:26px 40px 16px;display:flex;flex-direction:column}
+
+/* type: the site's scale, sized for a tablet screen */
+.label{font-size:13px;font-weight:400;letter-spacing:.02em;color:var(--ink-2)}
+h1{font-weight:400;font-size:62px;line-height:1;letter-spacing:-.02em}
+h2{font-weight:400;font-size:38px;line-height:1.05;letter-spacing:-.012em}
+h3{font-weight:400;font-size:19px;line-height:1.2;letter-spacing:-.01em}
+p{font-size:15.5px;line-height:1.5}
+.muted{color:var(--ink-2)}
+.note{font-size:13px;line-height:1.5;color:var(--ink-3)}
+.num{font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.head{flex:none;display:grid;grid-template-columns:1.1fr 1fr;gap:32px;align-items:end;padding-bottom:14px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+.head .label{margin-bottom:10px}
+.head .muted{justify-self:end;max-width:34em;font-size:14.5px}
+
+/* app bar and page bar */
+.chrome{position:absolute;z-index:20;inset:0 0 auto;height:60px;display:flex;align-items:center;gap:12px;padding:0 24px 0 18px;
+  border-bottom:1px solid var(--line);background:rgba(255,255,255,.94);transition:background .4s,border-color .4s,color .4s}
+.app-ico{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--ink);transition:background .4s}
+.app-ico svg{width:18px;height:18px;fill:#fff;transition:fill .4s}
+.app-id{display:grid;line-height:1.2}
+.app-id b{font-size:14.5px}
+.app-id em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.chrome .sec{margin-left:auto;font-size:13px;color:var(--ink-2)}
+.chrome .pg{min-width:52px;text-align:right;font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.chrome.dark{background:linear-gradient(rgba(17,19,21,.5),rgba(17,19,21,0));border-color:transparent;color:#fff}
+.chrome.dark .app-ico{background:#fff} .chrome.dark .app-ico svg{fill:var(--ink)}
+.chrome.dark em,.chrome.dark .sec,.chrome.dark .pg{color:rgba(255,255,255,.8)}
+/* "Send to buyer": only on the site's tablet (?mode=inline in a frame), where the page's phone receives it */
+.send{display:none;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;border-radius:999px;background:var(--ink);color:#fff;font-size:13px;white-space:nowrap;
+  transition:background .25s var(--ease),color .25s var(--ease)}
+html.linked .send{display:inline-flex}
+.send svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.send:hover{background:#000}
+.send .ok,.send .s2{display:none}
+.send.sent{background:#2F6A4F}
+.send.sent .go,.send.sent .s1{display:none}
+.send.sent .ok,.send.sent .s2{display:inline}
+.chrome.dark .send:not(.sent){background:#fff;color:var(--ink)}
+.foot{position:absolute;z-index:20;inset:auto 0 0;height:64px;display:flex;align-items:center;gap:14px;padding:0 18px 0 40px}
+.dots{display:flex;align-items:center;gap:6px}
+.dots button{width:8px;height:8px;border-radius:999px;background:var(--faint);transition:width .3s var(--ease),background .3s}
+.dots button.on{width:24px;background:var(--ink)}
+.foot .nav{margin-left:auto;display:flex;gap:8px}
+.foot .nav button{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:16px;
+  transition:background .2s,box-shadow .2s,color .2s}
+.foot .nav button:hover{box-shadow:inset 0 0 0 1px var(--ink)}
+.foot .nav .next{background:var(--ink);color:#fff;box-shadow:none}
+.foot .nav .next:hover{background:#000;box-shadow:none}
+.foot.dark .dots button{background:rgba(255,255,255,.5)} .foot.dark .dots button.on{background:#fff}
+.foot.dark .nav button{background:rgba(255,255,255,.94);box-shadow:none;color:var(--ink)}
+.foot.dark .nav .next{background:#fff}
+
+/* pills and cards, as on the site */
+.btn{display:inline-flex;align-items:center;gap:12px;padding:9px 10px 9px 18px;border-radius:999px;background:var(--ink);color:#fff;font-size:14.5px;font-weight:400;
+  text-decoration:none;white-space:nowrap;transition:background .25s var(--ease)}
+.btn .arr{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#fff;color:var(--ink);font-style:normal;font-size:12px;transition:transform .25s var(--ease)}
+.btn:hover{background:#000}
+.btn:hover .arr{transform:translateX(3px)}
+.btn.light{background:#fff;color:var(--ink)} .btn.light .arr{background:var(--ink);color:#fff} .btn.light:hover{background:#ECECEC}
+.btn.glass{background:rgba(255,255,255,.14);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.btn.glass:hover{background:rgba(255,255,255,.24)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)} .btn.ghost .arr{background:var(--ink);color:#fff}
+.btn.ghost:hover{background:var(--ink);color:#fff} .btn.ghost:hover .arr{background:#fff;color:var(--ink)}
+.chip{padding:8px 14px;border-radius:999px;font-size:13px;color:var(--ink-2);background:#fff;box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap;
+  transition:background .2s,color .2s,box-shadow .2s}
+.chip:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.chip.on,.chip[aria-pressed=true]{background:var(--ink);color:#fff;box-shadow:none}
+.seg{display:flex;gap:3px;padding:3px;border-radius:999px;background:var(--tint)}
+.seg button{padding:7px 13px;border-radius:999px;font-size:13px;color:var(--ink-2);white-space:nowrap;transition:background .2s,color .2s}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff}
+.card{position:relative;overflow:hidden;border-radius:var(--r);background:var(--tint)}
+.pill{position:absolute;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.93);font-size:12px;color:var(--ink);pointer-events:none}
+
+/* full-bleed photographs: welcome and next steps */
+.photo .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo .shade{position:absolute;inset:0}
+.cover .shade{background:linear-gradient(90deg,rgba(17,19,21,.84) 0%,rgba(17,19,21,.5) 44%,rgba(17,19,21,0) 74%),linear-gradient(0deg,rgba(17,19,21,.4),rgba(17,19,21,0) 40%)}
+.cv{position:absolute;left:40px;bottom:96px;width:700px;color:#fff}
+.cv .label{color:rgba(255,255,255,.8)}
+.cv h1{margin-top:14px}
+.cv .lede{margin-top:20px;max-width:34em;font-size:17px;color:rgba(255,255,255,.86)}
+.cv-row{display:flex;gap:10px;margin-top:26px}
+.meta{display:flex;gap:30px;margin-top:30px;font-size:12.5px;color:rgba(255,255,255,.72)}
+.meta b{display:block;margin-top:4px;font-size:14.5px;font-weight:400;color:#fff}
+.cred{position:absolute;right:40px;bottom:76px;max-width:440px;text-align:right;font-size:12px;color:rgba(255,255,255,.8);text-shadow:0 1px 3px rgba(0,0,0,.55)}
+.next .shade{background:linear-gradient(0deg,rgba(17,19,21,.35),rgba(17,19,21,0) 34%)}
+.next .cred{right:auto;left:40px;text-align:left}
+.next-panel{position:absolute;right:40px;top:84px;bottom:84px;width:452px;display:flex;flex-direction:column;padding:28px 30px 24px;border-radius:var(--r);
+  background:rgba(255,255,255,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.next-panel h2{margin-top:10px}
+.steps4{margin-top:18px}
+.steps4 li{display:grid;grid-template-columns:34px 1fr;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.steps4 li .num{padding-top:1px}
+.next-panel>.note{margin-top:8px}
+.take{display:grid;grid-template-columns:104px 1fr;gap:16px;align-items:center;margin-top:auto;padding:14px;border-radius:12px;background:var(--tint)}
+.qr{width:104px;height:104px;display:grid;place-items:center;padding:6px;border-radius:8px;background:#fff}
+.qr img,.qr canvas{width:92px!important;height:92px!important}
+.take b{display:block;font-weight:400;font-size:16px}
+.take .note{margin-top:4px}
+.take .chip{margin-top:10px}
+
+/* at a glance */
+.glance{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.02fr;gap:30px}
+.glance-txt{min-height:0;display:flex;flex-direction:column;gap:16px}
+.glance-txt h2{margin-top:-4px}
+.glance-txt>p{font-size:15px;color:var(--ink-2)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px;margin-top:auto}
+.facts div{display:grid;gap:3px;padding-top:9px;border-top:1px solid var(--line)}
+.facts b{font-weight:400;font-size:27px;line-height:1.05;letter-spacing:-.01em}
+.facts span{font-size:12.5px;line-height:1.4;color:var(--ink-3)}
+.photo-card{position:relative;min-height:0;overflow:hidden;border-radius:var(--r);background:var(--tint)}
+.photo-card img{width:100%;height:100%;object-fit:cover}
+.photo-card .pill{left:12px;bottom:12px}
+
+/* the plans */
+.plans{flex:1;min-height:0;display:grid;grid-template-columns:1fr 300px;gap:28px}
+.plan-view{position:relative;min-height:0;overflow:hidden;border-radius:var(--r);background:#fff;box-shadow:inset 0 0 0 1px var(--line);cursor:zoom-in}
+.plan-view img{position:absolute;inset:0;margin:auto;max-width:94%;max-height:94%;opacity:0;transition:opacity .35s var(--ease),transform .4s var(--ease)}
+.plan-view img.on{opacity:1}
+.plan-view.zoom{cursor:zoom-out} .plan-view.zoom img{transform:scale(1.9)}
+.plan-view .pill{left:12px;top:12px}
+.plan-side{min-height:0;display:flex;flex-direction:column;gap:12px}
+.plan-side h2{margin-top:-4px}
+.plan-side .seg{align-self:flex-start;margin-top:4px}
+.rooms-list{display:none;margin-top:2px}
+.rooms-list.on{display:block}
+.rooms-list li{display:grid;gap:1px;padding:8px 0;border-top:1px solid var(--line)}
+.rooms-list li b{font-weight:400;font-size:15px}
+.rooms-list li span{font-size:12.5px;color:var(--ink-3)}
+.plan-side .note{margin-top:auto}
+
+/* image galleries */
+.gal{flex:1;min-height:0;display:grid;gap:12px}
+.gal-ext{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}   /* the four renders, 16:9 each, trimmed a little top and bottom */
+.gal-int{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr}
+.gal button{position:relative;min-height:0;overflow:hidden;border-radius:12px;background:var(--tint)}
+.gal button img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+.gal button:hover img{transform:scale(1.04)}
+.gal button .pill{left:10px;bottom:10px}
+
+/* colours: five palettes on the rendered south elevation */
+.colours{flex:1;min-height:0;display:grid;grid-template-columns:1fr 316px;gap:26px}
+.elev{position:relative;min-height:0;overflow:hidden;border-radius:var(--r);background:var(--tint)}
+.elev img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .45s var(--ease)}
+.elev img.on{opacity:1}
+.elev .pill{left:12px;top:12px;z-index:2}
+.pal-side{min-height:0;display:flex;flex-direction:column;gap:8px}
+.palettes{display:flex;flex-direction:column;gap:7px}
+.palettes button{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:center;padding:9px 12px;border-radius:12px;text-align:left;background:#fff;
+  box-shadow:inset 0 0 0 1px var(--line);transition:box-shadow .2s}
+.palettes button:hover{box-shadow:inset 0 0 0 1px var(--ink-3)}
+.palettes button.on{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.sw2{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.palettes b{display:block;font-weight:400;font-size:15px}
+.palettes span{font-size:12.5px;color:var(--ink-3)}
+.pal-side .note{margin-top:auto}
+
+/* materials: the house as designed, colours taken from the 3D model */
+.mats{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr 270px;gap:24px}
+.mat-col h3{font-size:16px;margin-bottom:6px;color:var(--ink-2)}
+.mat{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.mat i{width:36px;height:36px;border-radius:10px;background:var(--c);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.mat i.two{background:linear-gradient(135deg,var(--c) 50%,var(--d) 50%)}
+.mat b{display:block;font-weight:400;font-size:14.5px}
+.mat span{font-size:12.5px;color:var(--ink-3)}
+.mat-photo img{object-position:68% 50%}   /* a tall slice of the entrance render: the door, the oak boarding, plaster, pergola and step */
+
+/* live 3D: the site's engine (axo.js) in a light grey card, a control dock under it, the build steps beside it */
+.asm{flex:1;min-height:0;display:grid;grid-template-columns:1fr 300px;gap:26px}
+.asm-3d{position:relative;min-height:0;display:flex;flex-direction:column;overflow:hidden;border-radius:var(--r);background:var(--tint)}
+.asm-view{position:relative;flex:1;min-height:0;overflow:hidden}
+/* laid out at its size on screen (inverse of the stage scale, set by js), so the model renders at the screen's
+   resolution and the engine's labels keep their real pixel size */
+.iso-canvas{position:absolute;left:0;top:0;transform-origin:0 0;opacity:0;transition:opacity .6s var(--ease)}
+.asm-3d.ready .iso-canvas{opacity:1}
+.iso-canvas canvas{position:absolute;inset:0;display:block;width:100%;height:100%;cursor:grab;touch-action:pan-y;outline:none}
+.iso-canvas.drag canvas{cursor:grabbing}
+.asm-view .pill{top:12px;left:12px;z-index:2}
+.asm-msg{position:absolute;inset:0;display:grid;place-items:center;padding:40px;text-align:center;font-size:14px;color:var(--ink-3);pointer-events:none}
+.asm-3d.ready .asm-msg{display:none}
+.asm-dock{flex:none;display:grid;gap:10px;padding:12px 14px 14px;background:#fff;border-top:1px solid var(--line)}
+.asm-ctl{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.asm-build{display:flex;align-items:center;gap:12px}
+.asm-play{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;transition:transform .25s var(--ease)}
+.asm-play:hover{transform:scale(1.06)}
+.asm-track{flex:1;display:grid;gap:5px}
+.asm-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.asm-row b{font-weight:400;font-size:14.5px}
+.asm-track input{width:100%;accent-color:var(--ink)}
+.asm-side{min-height:0;display:flex;flex-direction:column;gap:10px}
+.asm-side h2{font-size:32px}
+.asm-side .muted{font-size:13.5px}
+.asm-side h3{margin-top:6px;font-size:15px;color:var(--ink-2)}
+.steps{min-height:0;overflow:auto}
+.steps button{display:grid;grid-template-columns:30px 1fr;width:100%;padding:7px 0;border-top:1px solid var(--line);text-align:left;color:var(--ink-3);transition:color .2s}
+.steps button .num{padding-top:1px}
+.steps button b{display:block;font-weight:400;font-size:14px}
+.steps button small{display:none;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+.steps button.done{color:var(--ink-2)}
+.steps button.on{color:var(--ink)} .steps button.on .num{color:var(--ink)}
+.steps button.on small{display:block}
+/* the engine's labels (as in the site's Live 3D viewer) */
+.axo-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;font-family:'Inter Tight','Helvetica Neue',Arial,sans-serif}
+.lbl{position:absolute;transform:translate(-50%,-100%);font-size:12px;font-weight:400;white-space:nowrap;padding-bottom:18px;transition:opacity .25s}
+.lbl::after{content:"";position:absolute;left:50%;bottom:0;width:1px;height:16px;background:var(--ink)}
+.lbl b{display:block;background:var(--ink);color:#fff;padding:3px 7px;font-weight:500;border-radius:2px}
+.lbl.call{transform:translate(0,-50%);padding:0}
+.lbl.call::after{display:none}
+.lbl.call b{background:rgba(255,255,255,.94);color:var(--ink);border:1px solid var(--line);font-weight:400;padding:4px 9px;border-radius:999px}
+.lbl.dim,.lbl.tag{padding:0;transform:translate(-50%,-50%)} .lbl.dim::after,.lbl.tag::after{display:none}
+.leaders{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.leaders .ld{fill:none;stroke:var(--ink);stroke-width:.75;opacity:.5}
+.leaders .dt{fill:var(--slate)}
+
+/* walk through */
+.walk{flex:1;min-height:0;display:grid;grid-template-columns:1fr 300px;gap:28px}
+.seq{position:relative;align-self:start;aspect-ratio:16/9;overflow:hidden;border-radius:var(--r);background:var(--night);cursor:pointer}
+.seq video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s var(--ease)}
+.seq video.on{opacity:1}
+.seq-bar{position:absolute;z-index:2;left:14px;right:14px;bottom:12px;height:3px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.35)}
+.seq-bar i{position:absolute;left:0;top:0;bottom:0;background:#fff}
+.seq-pp{position:absolute;z-index:2;right:12px;top:12px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.93);font-size:12px;color:var(--ink)}
+.walk-side{min-height:0;display:flex;flex-direction:column;gap:12px}
+.chapters button{display:grid;grid-template-columns:32px 1fr;width:100%;padding:9px 0;border-top:1px solid var(--line);text-align:left;font-size:14.5px;color:var(--ink-3)}
+.chapters button.on{color:var(--ink)} .chapters button.on .num{color:var(--ink)}
+.chapters button:hover{color:var(--ink)}
+.walk-side .note{margin-top:auto}
+
+/* how it's built */
+.built{flex:1;min-height:0;display:grid;grid-template-columns:auto 1fr;gap:34px}
+.vid-tall{height:100%;aspect-ratio:4/5;overflow:hidden;border-radius:var(--r);background:#EFEFEF}
+.vid-tall video{display:block;width:100%;height:100%;object-fit:cover}
+.built-side{min-height:0;display:flex;flex-direction:column;gap:12px}
+.phases li{display:grid;grid-template-columns:40px 1fr;padding:12px 0;border-top:1px solid var(--line)}
+.phases li .num{padding-top:2px}
+.phases li b{display:block;font-weight:400;font-size:17px}
+.phases li span{display:block;margin-top:3px;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.built-side .row{display:flex;gap:10px;margin-top:6px}
+.built-side .note{margin-top:auto}
+
+/* what's included */
+.incl{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:14px}
+.incl .card{display:flex;flex-direction:column;gap:8px;padding:18px 20px}
+.incl li{padding:7px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.4;color:var(--ink-2)}
+.incl-note{flex:none;margin-top:12px}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:100;display:none;place-items:center;background:rgba(244,244,243,.97);cursor:zoom-out}
+.lb.open{display:grid}
+.lb img{max-width:92vw;max-height:84vh;border-radius:12px;box-shadow:0 20px 50px -20px rgba(0,0,0,.35)}
+.lb p{position:absolute;bottom:3vh;left:0;right:0;text-align:center;font-size:13px;color:var(--ink-2)}
+
+.hint{position:fixed;right:14px;bottom:10px;z-index:50;font-size:12px;color:var(--ink-3)}
+html.inline .hint{display:none}
+/* phone held upright: the stage is small, so suggest landscape in the empty band above it */
+.rotate{display:none;position:fixed;left:16px;right:16px;top:calc(50% - 50vw * 834 / 1194 / 2 - 52px);text-align:center;font-size:13px;color:var(--ink-2)}
+@media (orientation:portrait) and (max-width:760px){html:not(.inline) .rotate{display:block}.hint{display:none}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <div class="chrome" id="chrome">
+    <span class="app-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="12.6" width="18" height="6.6" rx="1.1"/><rect x="3" y="4.8" width="12.4" height="6.6" rx="1.1"/></svg></span>
+    <span class="app-id"><b>Container House</b><em>Two-storey home · demonstration project</em></span>
+    <span class="sec" id="secname"></span><span class="pg" id="pageNo">01 / 12</span>
+    <button class="send" id="sendBtn" type="button"><svg class="go" viewBox="0 0 20 20" aria-hidden="true"><path d="M18 2 8.6 11.4M18 2l-5.8 16-3.6-6.6L2 7.8 18 2Z"/></svg><svg class="ok" viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10.5 4 4 8-9"/></svg><span class="s1">Send to buyer</span><span class="s2">Sent</span></button>
+  </div>
+
+  <!-- 01 WELCOME -->
+  <section class="slide photo cover" data-name="Welcome" data-dark>
+    <img class="bg" src="../assets/img/render-garden-2560.jpg" alt="The house from its garden, past an old olive tree: the entrance under the pergola beside the oak boarding, the upper floor and its balcony above, a dining pergola and flower beds in the garden">
+    <div class="shade"></div>
+    <div class="cv">
+      <p class="label">Container House · a home in five modules</p>
+      <h1>Your home,<br>before it's built.</h1>
+      <p class="lede">Walk through it room by room, turn it in 3D, choose its colours and see how it comes together, all before the first module is made.</p>
+      <div class="cv-row"><button class="btn light" data-go="1">Start the tour <i class="arr">→</i></button><button class="btn glass" data-go="3">Explore in 3D <i class="arr">→</i></button></div>
+      <div class="meta">
+        <div>Floors<b>2</b></div>
+        <div>Modules<b>≈ 149 m²</b></div>
+        <div>Roof terrace<b>29.7 m²</b></div>
+        <div>Deck<b>On two sides</b></div>
+      </div>
+    </div>
+    <p class="cred">Rendered from the 3D model · the garden is illustrative</p>
+  </section>
+
+  <!-- 02 AT A GLANCE -->
+  <section class="slide" data-name="At a glance">
+    <div class="body">
+      <div class="glance">
+        <div class="glance-txt">
+          <p class="label">At a glance</p>
+          <h2>A two-storey home in five modules.</h2>
+          <p>Three steel modules side by side make the ground floor and two more sit on top; the roof of the third becomes a terrace. Two glass walls open the living space onto a deck that wraps the south and east sides.</p>
+          <div class="facts">
+            <div><b>2 floors</b><span>Open-plan living below; bedroom, studio office and roof terrace above</span></div>
+            <div><b>≈ 149 m²</b><span>Five modules of 12.19 × 2.44 m each</span></div>
+            <div><b>12.19 × 7.32 m</b><span>Footprint, before the deck and the pergola</span></div>
+            <div><b>29.7 m²</b><span>Roof terrace under a timber shade</span></div>
+            <div><b>2 baths + WC</b><span>Ensuite, family bathroom and a guest WC</span></div>
+            <div><b>Solar roof</b><span>Solar panels and a solar water heater</span></div>
+          </div>
+        </div>
+        <div class="photo-card"><img src="../assets/img/render-entrance-2560.jpg" alt="The entrance end of the house: the black front door between the glass and the oak boarding, the pergola with its vines, the white upper floor with the roof terrace and the solar panels"><span class="pill">Rendered from the 3D model</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 THE PLANS -->
+  <section class="slide" data-name="The plans">
+    <div class="body">
+      <div class="plans">
+        <div class="plan-view" id="planView">
+          <img class="on" data-floor="gf" src="../assets/img/plan-gf-ink-clean.webp" alt="Ground floor plan">
+          <img data-floor="uf" src="../assets/img/plan-uf-ink-clean.webp" alt="Upper floor plan">
+          <span class="pill">Drawn from the 3D model · tap to zoom</span>
+        </div>
+        <div class="plan-side">
+          <p class="label">The plans</p>
+          <h2>Room by room.</h2>
+          <div class="seg" id="floorSeg" role="group" aria-label="Floor"><button class="on" data-floor="gf">Ground floor</button><button data-floor="uf">Upper floor</button></div>
+          <ul class="rooms-list on" data-floor="gf">
+            <li><b>Living</b><span>Two glass walls onto the deck</span></li>
+            <li><b>Dining</b><span>A table for eight in the middle of the house</span></li>
+            <li><b>Kitchen</b><span>Along the oak wall, under a strip window</span></li>
+            <li><b>Entry</b><span>Front door at the east end, by the deck</span></li>
+            <li><b>Guest WC and laundry</b><span>Behind a pocket door</span></li>
+            <li><b>Stair</b><span>Two flights up to the landing</span></li>
+            <li><b>Deck</b><span>Wraps the south and east sides</span></li>
+          </ul>
+          <ul class="rooms-list" data-floor="uf">
+            <li><b>Bedroom</b><span>The full width of the upper floor, with glass doors to the terrace</span></li>
+            <li><b>Ensuite</b><span>Shower, basin and WC</span></li>
+            <li><b>Walk-in wardrobe</b><span>Between the bedroom and the bathroom</span></li>
+            <li><b>Bathroom</b><span>Shower, basin and WC</span></li>
+            <li><b>Studio office</b><span>A desk, an east window and doors to the terrace</span></li>
+            <li><b>Landing</b><span>At the top of the stair</span></li>
+            <li><b>Roof terrace</b><span>29.7 m², with room for a table for four</span></li>
+          </ul>
+          <p class="note">Ground and upper floor, drawn at 1:100 from the 3D model, so every room is shown at its real size.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 EXPLORE IN 3D -->
+  <section class="slide" data-name="Explore in 3D" id="isoSlide">
+    <div class="body">
+      <div class="asm">
+        <div class="asm-3d" id="asm3d">
+          <div class="asm-view" id="asmView">
+            <div class="iso-canvas" id="isoBox"><canvas id="isoCanvas" tabindex="-1" aria-label="The live 3D model of the house. Drag to turn it."></canvas><div class="axo-labels"></div></div>
+            <span class="pill">Live 3D · straight from the model</span>
+            <p class="asm-msg" id="asmMsg">Loading the 3D model…</p>
+          </div>
+          <div class="asm-dock">
+            <div class="asm-ctl">
+              <div class="seg" id="viewSeg" role="group" aria-label="View"><button class="on" data-view="whole">Whole house</button><button data-view="apart">Floors apart</button><button data-view="gf">Ground floor</button><button data-view="uf">Upper floor</button></div>
+              <button class="chip" id="insideBtn" aria-pressed="false">Look inside</button>
+            </div>
+            <div class="asm-build">
+              <button class="asm-play" id="playBtn" aria-label="Watch it being built"><span aria-hidden="true">▶</span></button>
+              <div class="asm-track">
+                <div class="asm-row"><b id="stepName">Finished house</b><span class="num" id="stepCount">10 / 10</span></div>
+                <input type="range" id="scrub" min="0" max="10" step="0.01" value="10" aria-label="How it's built, step by step">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="asm-side">
+          <p class="label">Explore in 3D</p>
+          <h2>Turn it, open it, look inside.</h2>
+          <p class="muted" id="asmHow">Drag to turn the house; pinch or scroll to zoom, double-tap to reset. Set the floors apart, see each floor from above, or press play to watch it being built.</p>
+          <h3>How it's built</h3>
+          <ol class="steps" id="stepList"></ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 THE ROOMS -->
+  <section class="slide" data-name="The rooms">
+    <div class="body">
+      <div class="head"><div><p class="label">The rooms</p><h2>Every room at its real size.</h2></div>
+        <p class="muted">Furniture at true scale, so it's clear what fits. Stills and film frames finished with AI assistance over the model's own views: the furniture and small details are illustrative. Tap to enlarge.</p></div>
+      <div class="gal gal-int">
+        <button data-lb="../assets/img/entry-b-editorial-v3.webp"><img src="../assets/img/entry-b-editorial-v3.webp" alt=""><span class="pill">Entry</span></button>
+        <button data-lb="../assets/img/living-refined-editorial-v3.webp"><img src="../assets/img/living-refined-editorial-v3.webp" alt=""><span class="pill">Living</span></button>
+        <button data-lb="../assets/img/kitchen-c-editorial-v3.webp"><img src="../assets/img/kitchen-c-editorial-v3.webp" alt=""><span class="pill">Kitchen</span></button>
+        <button data-lb="../assets/video/walk/room-stair.jpg"><img src="../assets/video/walk/room-stair.jpg" alt=""><span class="pill">Stair</span></button>
+        <button data-lb="../assets/video/walk/room-bedroom.jpg"><img src="../assets/video/walk/room-bedroom.jpg" alt=""><span class="pill">Bedroom</span></button>
+        <button data-lb="../assets/video/walk/room-terrace.jpg"><img src="../assets/video/walk/room-terrace.jpg" alt=""><span class="pill">Roof terrace</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 WALK THROUGH -->
+  <section class="slide" data-name="Walk through" id="seqSlide">
+    <div class="body">
+      <div class="head"><div><p class="label">Walk through</p><h2>Walk through it before it's built.</h2></div>
+        <p class="muted">The route of a first visit: the whole house, then inside, across the ground floor, up the stair to the bedroom and out onto the terrace. Clips finished with AI assistance over the model's camera path.</p></div>
+      <div class="walk">
+        <div class="seq" id="seq"><div class="seq-bar"><i id="seqBar"></i></div><button class="seq-pp" id="seqPP">Pause</button></div>
+        <div class="walk-side">
+          <ol class="chapters" id="chapters"></ol>
+          <p class="note">Tap a room to jump to it, or the film to skip ahead.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 OUTSIDE -->
+  <section class="slide" data-name="Outside">
+    <div class="body">
+      <div class="head"><div><p class="label">Outside</p><h2>The house from every side.</h2></div>
+        <p class="muted">Four views rendered from the 3D model: the house is shown exactly as designed; the garden and the setting are illustrative. Tap to enlarge.</p></div>
+      <div class="gal gal-ext">
+        <button data-lb="../assets/img/render-south-2560.jpg" data-cap="The garden side · rendered from the 3D model"><img src="../assets/img/render-south.jpg" alt="The long garden side: living and dining behind two glass walls, the deck under the pergola, the upper floor and its terrace above"><span class="pill">The garden side</span></button>
+        <button data-lb="../assets/img/render-entrance-2560.jpg" data-cap="The entrance · rendered from the 3D model"><img src="../assets/img/render-entrance.jpg" alt="The entrance end: the front door beside the oak boarding, under the pergola"><span class="pill">The entrance</span></button>
+        <button data-lb="../assets/img/render-west-2560.jpg" data-cap="The west end · rendered from the 3D model"><img src="../assets/img/render-west.jpg" alt="The west end: tall glass on both floors, balconies above, and the roof terrace under its timber shade"><span class="pill">The west end</span></button>
+        <button data-lb="../assets/img/render-garden-2560.jpg" data-cap="From the garden · rendered from the 3D model"><img src="../assets/img/render-garden.jpg" alt="The house from the garden past an olive tree, with a dining pergola among the flower beds"><span class="pill">From the garden</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 COLOURS -->
+  <section class="slide" data-name="Colours">
+    <div class="body">
+      <div class="head"><div><p class="label">Colours</p><h2>Choose the colours together.</h2></div>
+        <p class="muted">The same house in five palettes, rendered from its 3D model on the south side. Tap a palette to see it.</p></div>
+      <div class="colours">
+        <div class="elev" id="elev">
+          <img class="on" data-pal="0" src="../assets/img/finish-south-designed-photo.webp" alt="South elevation in the finish as designed: chalk-white cladding and oak">
+          <img data-pal="1" src="../assets/img/finish-south-charcoal-photo.webp" alt="South elevation with charcoal cladding and larch">
+          <img data-pal="2" src="../assets/img/finish-south-olive-photo.webp" alt="South elevation with olive cladding and an oak pergola">
+          <img data-pal="3" src="../assets/img/finish-south-terracotta-photo.webp" alt="South elevation with terracotta cladding and walnut">
+          <img data-pal="4" src="../assets/img/finish-south-sand-photo.webp" alt="South elevation with sand cladding and a black steel pergola">
+          <span class="pill">South side · rendered from the model</span>
+        </div>
+        <div class="pal-side">
+          <div class="palettes" id="palettes">
+            <button class="on" data-pal="0"><i class="sw2" style="--a:#ECE7DC;--b:#C29A6B"></i><span><b>As designed</b><span>Chalk-white cladding and oak</span></span></button>
+            <button data-pal="1"><i class="sw2" style="--a:#4B504F;--b:#CFAE78"></i><span><b>Charcoal &amp; larch</b><span>Charcoal cladding and larch</span></span></button>
+            <button data-pal="2"><i class="sw2" style="--a:#8D927B;--b:#B58D58"></i><span><b>Olive &amp; oak</b><span>Olive cladding and an oak pergola</span></span></button>
+            <button data-pal="3"><i class="sw2" style="--a:#C98F6C;--b:#7B5B3E"></i><span><b>Terracotta &amp; walnut</b><span>Terracotta cladding and walnut</span></span></button>
+            <button data-pal="4"><i class="sw2" style="--a:#D8C7A4;--b:#2F3231"></i><span><b>Sand &amp; black steel</b><span>Sand cladding and a black steel pergola</span></span></button>
+          </div>
+          <p class="note">Illustrative palettes for this demonstration. The final colours are agreed with each buyer.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 MATERIALS -->
+  <section class="slide" data-name="Materials">
+    <div class="body">
+      <div class="head"><div><p class="label">Materials</p><h2>What it's made of.</h2></div>
+        <p class="muted">The house as designed, with each colour taken from its 3D model. Any of these finishes can change per project.</p></div>
+      <div class="mats">
+        <div class="mat-col"><h3>Outside</h3>
+          <div class="mat"><i style="--c:#D4CFC3"></i><span><b>Cladding</b><span>Warm white plaster</span></span></div>
+          <div class="mat"><i style="--c:#94714A"></i><span><b>Facade boarding and doors</b><span>Natural oak</span></span></div>
+          <div class="mat"><i style="--c:#B29667"></i><span><b>Deck and pergola beams</b><span>Teak</span></span></div>
+          <div class="mat"><i style="--c:#161717"></i><span><b>Steel, posts and railings</b><span>Matte charcoal</span></span></div>
+          <div class="mat"><i class="two" style="--c:#0A0B0B;--d:#DCE6EA"></i><span><b>Windows</b><span>Black aluminium frames, clear double glazing</span></span></div>
+          <div class="mat"><i style="--c:#601615"></i><span><b>Original container doors</b><span>Red, kept at the east end</span></span></div>
+          <div class="mat"><i style="--c:#293A46"></i><span><b>Solar roof</b><span>Solar panels and a solar water heater</span></span></div>
+        </div>
+        <div class="mat-col"><h3>Inside</h3>
+          <div class="mat"><i style="--c:#8D6C49"></i><span><b>Floors</b><span>Oak parquet, herringbone</span></span></div>
+          <div class="mat"><i style="--c:#D1CEC7"></i><span><b>Walls</b><span>Warm white plaster</span></span></div>
+          <div class="mat"><i style="--c:#93724F"></i><span><b>Kitchen units and feature wall</b><span>Natural oak</span></span></div>
+          <div class="mat"><i style="--c:#111110"></i><span><b>Worktop</b><span>Black marble</span></span></div>
+          <div class="mat"><i style="--c:#51AEE7"></i><span><b>Range cooker</b><span>Turquoise</span></span></div>
+          <div class="mat"><i class="two" style="--c:#C5BFBB;--d:#CDA15B"></i><span><b>Bathrooms</b><span>Glazed stoneware, brushed brass fittings</span></span></div>
+          <div class="mat"><i class="two" style="--c:#A59F8E;--d:#31170B"></i><span><b>Textiles</b><span>Linen, wool and cognac leather</span></span></div>
+        </div>
+        <div class="photo-card mat-photo"><img src="../assets/img/render-entrance-2560.jpg" alt="The entrance up close: the black front door beside the oak boarding, warm white plaster above, the pergola and the teak step"><span class="pill">Entrance · rendered from the model</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 HOW IT'S BUILT -->
+  <section class="slide" data-name="How it's built" id="asmSlide">
+    <div class="body">
+      <div class="head"><div><p class="label">How it's built</p><h2>From five modules to a home.</h2></div>
+        <p class="muted">A film rendered from the 3D model: the house lifts apart layer by layer, holds with every layer named, then settles back into place.</p></div>
+      <div class="built">
+        <div class="vid-tall"><video id="asmVid" src="../assets/video/exploded-axo.mp4" poster="../assets/video/exploded-axo-poster.jpg" controls muted loop playsinline preload="none" aria-label="Film of the house coming apart layer by layer, then settling back"></video></div>
+        <div class="built-side">
+          <ol class="phases">
+            <li><span class="num">01</span><span><b>Ground floor</b><span>Piers are set out, then three modules are craned into place side by side.</span></span></li>
+            <li><span class="num">02</span><span><b>One open space</b><span>Steel beams and posts carry the load where the long walls open up; the stair goes in.</span></span></li>
+            <li><span class="num">03</span><span><b>Upper floor</b><span>Two more modules are craned on top. The roof of the third becomes the terrace.</span></span></li>
+            <li><span class="num">04</span><span><b>Finishing</b><span>Windows and doors, the kitchen and bathrooms, then the deck, the pergola and the solar roof.</span></span></li>
+          </ol>
+          <div class="row"><button class="btn" id="build3d">Watch it build in 3D <i class="arr">→</i></button><button class="btn ghost" id="holdBtn">Pause on the layers <i class="arr">→</i></button></div>
+          <p class="note">The build order of this demonstration house. Each project has its own engineer, permits and schedule.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 WHAT'S INCLUDED -->
+  <section class="slide" data-name="What's included">
+    <div class="body">
+      <div class="head"><div><p class="label">What's included</p><h2>What comes with the house.</h2></div>
+        <p class="muted">The specification of this demonstration model. Each project is specified with its buyer.</p></div>
+      <div class="incl">
+        <div class="card"><span class="num">01</span><h3>Structure</h3><ul><li>Five 40 ft High Cube steel modules on piers</li><li>Steel beams and posts where walls open up</li><li>Two-flight stair</li></ul></div>
+        <div class="card"><span class="num">02</span><h3>Glass</h3><ul><li>Two sliding glass walls onto the deck</li><li>Black aluminium windows and doors</li><li>Clear double glazing</li></ul></div>
+        <div class="card"><span class="num">03</span><h3>Rooms</h3><ul><li>Open-plan living, dining and kitchen</li><li>Bedroom with ensuite and walk-in wardrobe</li><li>Studio office and family bathroom</li></ul></div>
+        <div class="card"><span class="num">04</span><h3>Kitchen and baths</h3><ul><li>Oak kitchen, black marble top, range cooker</li><li>Two bathrooms with showers</li><li>Guest WC and laundry</li></ul></div>
+        <div class="card"><span class="num">05</span><h3>Outside</h3><ul><li>Teak deck on the south and east sides</li><li>Pergola on slim charcoal posts</li><li>29.7 m² roof terrace with a timber shade</li></ul></div>
+        <div class="card"><span class="num">06</span><h3>Energy</h3><ul><li>Solar panels on the upper roof</li><li>Solar water heater</li><li>Shade over the south glass</li></ul></div>
+      </div>
+      <p class="note incl-note">The structure is shown as it is coordinated in the model; member sizes and footings are designed by the project's engineer.</p>
+    </div>
+  </section>
+
+  <!-- 12 NEXT STEPS -->
+  <section class="slide photo next" data-name="Next steps" id="nextSlide" data-dark>
+    <img class="bg" src="../assets/img/render-west-2560.jpg" alt="The west end of the house among olive trees: tall glass on both floors, the balconies, and the roof terrace under its timber shade">
+    <div class="shade"></div>
+    <div class="next-panel">
+      <p class="label">Next steps</p>
+      <h2>Make it yours.</h2>
+      <ol class="steps4">
+        <li><span class="num">01</span>Choose the colours and materials</li>
+        <li><span class="num">02</span>Confirm the plan and the options</li>
+        <li><span class="num">03</span>Agree the price and the schedule</li>
+        <li><span class="num">04</span>The modules are made, delivered and assembled</li>
+      </ol>
+      <p class="note">An example of the steps; the sales team gives the details.</p>
+      <div class="take">
+        <div class="qr" id="qr" aria-hidden="true"></div>
+        <div><b>Take it home</b><p class="note">Scan to open this presentation on your phone and go through it again at home.</p><button class="chip" data-go="0">Back to the start</button></div>
+      </div>
+    </div>
+    <p class="cred">Rendered from the 3D model · the garden is illustrative</p>
+  </section>
+
+  <div class="foot" id="foot">
+    <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+    <div class="nav"><button id="prevBtn" aria-label="Previous slide">←</button><button class="next" id="nextBtn" aria-label="Next slide">→</button></div>
+  </div>
+</div>
+
+<div class="lb" id="lb"><img alt=""><p></p></div>
+<div class="hint" id="hint">← → keys · F full screen</div>
+<div class="rotate">Turn your phone sideways for the full slide · swipe to move</div>
+
+<script>
+/* ---------- deck ---------- */
+const MODE=new URLSearchParams(location.search).get('mode')||'page';     // 'inline' (the tablet on the site), 'full' (its full-screen dialog) or 'page'
+document.documentElement.classList.add(MODE);
+const embedded=MODE==='full'&&window.parent!==window;
+/* on the site's tablet (#tools) the deck talks to the page, whose phone shows the buyer's side: the slide it is on, the
+   palette picked on Colours, the 3D view (floors apart or not) and "Send to buyer" (same origin only) */
+const linked=MODE==='inline'&&window.parent!==window;
+if(linked)document.documentElement.classList.add('linked');
+function tell(msg){if(linked)try{parent.postMessage(msg,location.origin)}catch(e){}}
+const W=1194,H=834;
+const stage=document.getElementById('stage');
+const slides=[...document.querySelectorAll('.slide')];
+const lb=document.getElementById('lb');
+const hint=document.getElementById('hint');
+if(embedded)hint.textContent='← → keys · Esc closes';
+let cur=0;
+function fit(){const s=Math.min(innerWidth/W,innerHeight/H);stage.style.setProperty('--s',s);
+  hint.hidden=(innerHeight-H*s)/2<26;                                  // only where the window leaves room under the stage
+  document.dispatchEvent(new CustomEvent('fit',{detail:s}))}
+addEventListener('resize',fit);fit();
+const dotsEl=document.getElementById('dots');
+slides.forEach((s,i)=>{const b=document.createElement('button');b.setAttribute('role','tab');b.setAttribute('aria-label',(i+1)+' · '+s.dataset.name);b.onclick=()=>go(i);dotsEl.appendChild(b)});
+function go(i){
+  i=Math.max(0,Math.min(slides.length-1,i));
+  slides[cur].classList.remove('active');
+  slides[cur].querySelectorAll('video').forEach(v=>v.pause());
+  cur=i;const s=slides[cur];s.classList.add('active');
+  const dark=s.hasAttribute('data-dark');
+  document.getElementById('chrome').classList.toggle('dark',dark);
+  document.getElementById('foot').classList.toggle('dark',dark);
+  document.getElementById('secname').textContent=s.dataset.name;
+  document.getElementById('pageNo').textContent=String(cur+1).padStart(2,'0')+' / '+slides.length;
+  dotsEl.querySelectorAll('button').forEach((b,k)=>{b.classList.toggle('on',k===cur);b.setAttribute('aria-selected',String(k===cur))});
+  try{history.replaceState(null,'',location.search+'#'+(cur+1))}catch(e){}
+  document.dispatchEvent(new CustomEvent('slide',{detail:s}));
+  tell({deck:'slide',n:cur+1});
+}
+const sendBtn=document.getElementById('sendBtn');let sentT=0;
+sendBtn.onclick=()=>{sendBtn.classList.add('sent');clearTimeout(sentT);sentT=setTimeout(()=>sendBtn.classList.remove('sent'),2400);tell({deck:'send'})};
+document.getElementById('prevBtn').onclick=()=>go(cur-1);
+document.getElementById('nextBtn').onclick=()=>go(cur+1);
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(+b.dataset.go));
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(lb.classList.contains('open')){if(e.key==='Escape')lb.classList.remove('open');return}
+  if(e.key==='Escape'){if(embedded)parent.postMessage({deck:'close'},location.origin);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'||(e.key===' '&&!slides[cur].querySelector('video'))){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if((e.key==='f'||e.key==='F')&&MODE!=='inline'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.()}
+});
+/* touch: a sideways swipe moves a slide (not on the 3D model or a zoomable plan) */
+let tx=null,ty=null;
+addEventListener('touchstart',e=>{tx=null;if(e.touches.length!==1||e.target.closest('#isoBox,#planView,input'))return;tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{if(tx===null)return;const p=e.changedTouches[0],dx=p.clientX-tx,dy=p.clientY-ty;tx=null;
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5&&!lb.classList.contains('open'))go(cur+(dx<0?1:-1))},{passive:true});
+
+/* the plans: one floor at a time, tap to zoom where you tap */
+const planView=document.getElementById('planView');
+document.querySelectorAll('#floorSeg button').forEach(b=>b.onclick=()=>{
+  const f=b.dataset.floor;
+  document.querySelectorAll('#floorSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  planView.querySelectorAll('img').forEach(i=>i.classList.toggle('on',i.dataset.floor===f));
+  document.querySelectorAll('.rooms-list').forEach(l=>l.classList.toggle('on',l.dataset.floor===f));
+  planView.classList.remove('zoom');
+});
+planView.onclick=e=>{
+  const r=planView.getBoundingClientRect(),o=((e.clientX-r.left)/r.width*100)+'% '+((e.clientY-r.top)/r.height*100)+'%';
+  planView.querySelectorAll('img').forEach(i=>i.style.transformOrigin=o);
+  planView.classList.toggle('zoom');
+};
+
+/* lightbox */
+document.querySelectorAll('[data-lb]').forEach(b=>b.onclick=()=>{
+  lb.querySelector('img').src=b.dataset.lb;lb.querySelector('p').textContent=b.dataset.cap||b.querySelector('.pill')?.textContent||'';lb.classList.add('open');
+});
+lb.onclick=()=>lb.classList.remove('open');
+
+/* colours: the rendered south elevation of each palette */
+document.querySelectorAll('#palettes button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#palettes button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('#elev img').forEach(i=>i.classList.toggle('on',i.dataset.pal===b.dataset.pal));
+  tell({deck:'finish',i:+b.dataset.pal});                   // the same five palettes repaint the live model on the page's phone
+});
+
+/* how it's built: the exploded film; the hold (every layer apart and named) is at 10 s of 20 */
+const asmSlide=document.getElementById('asmSlide'),asmV=document.getElementById('asmVid');
+document.getElementById('holdBtn').onclick=()=>{asmV.preload='auto';asmV.pause();asmV.currentTime=10};
+document.getElementById('build3d').onclick=()=>{go(3);document.dispatchEvent(new CustomEvent('build3d'))};
+document.addEventListener('slide',e=>{if(e.detail===asmSlide){asmV.preload='auto';asmV.play().catch(()=>{})}});
+
+/* walk through: the walkthrough clips in the order of a first visit, one after the other */
+const CLIPS=[['exterior-roof','The whole house'],['room-entry','Entry'],['room-living','Living'],['room-kitchen','Kitchen'],['room-stair','Up the stair'],['room-bedroom','Bedroom'],['room-terrace','Roof terrace']];
+const seqSlide=document.getElementById('seqSlide'),seq=document.getElementById('seq'),chEl=document.getElementById('chapters'),seqBar=document.getElementById('seqBar'),seqPP=document.getElementById('seqPP');
+let seqI=0,seqPaused=false,seqRaf=0;
+const seqVids=CLIPS.map(([f,n],i)=>{
+  const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='none';
+  v.poster='../assets/video/walk/'+f+'.jpg';v.dataset.src='../assets/video/walk/'+f+'.mp4';v.setAttribute('aria-label',n);
+  v.addEventListener('ended',()=>{if(v===seqVids[seqI]&&!seqPaused)showSeq(seqI+1)});
+  seq.insertBefore(v,seq.firstChild);
+  const li=document.createElement('li'),b=document.createElement('button');
+  b.innerHTML='<span class="num">'+String(i+1).padStart(2,'0')+'</span><span></span>';b.lastChild.textContent=n;
+  b.onclick=()=>showSeq(i);li.appendChild(b);chEl.appendChild(li);return v});
+function load(v){if(!v.getAttribute('src')){v.src=v.dataset.src;v.preload='auto'}}
+function showSeq(i){
+  seqI=(i+seqVids.length)%seqVids.length;
+  seqVids.forEach((v,k)=>{if(k===seqI){load(v);v.classList.add('on');try{v.currentTime=0}catch(e){}if(!seqPaused)v.play().catch(()=>{})}else{v.classList.remove('on');v.pause()}});
+  chEl.querySelectorAll('button').forEach((b,k)=>b.classList.toggle('on',k===seqI));
+  load(seqVids[(seqI+1)%seqVids.length]);                   // the next clip loads while this one plays
+}
+function seqTick(){
+  if(!seqSlide.classList.contains('active')){seqRaf=0;return}
+  const v=seqVids[seqI];seqBar.style.width=(v.duration?Math.min(1,v.currentTime/v.duration)*100:0)+'%';
+  seqRaf=requestAnimationFrame(seqTick)}
+seqPP.onclick=e=>{e.stopPropagation();seqPaused=!seqPaused;seqPP.textContent=seqPaused?'Play':'Pause';const v=seqVids[seqI];seqPaused?v.pause():v.play().catch(()=>{})};
+seq.addEventListener('click',e=>{if(e.target!==seqPP)showSeq(seqI+1)});
+document.addEventListener('slide',e=>{if(e.detail===seqSlide){seqPaused=false;seqPP.textContent='Pause';showSeq(0);if(!seqRaf)seqRaf=requestAnimationFrame(seqTick)}});
+
+/* next steps: a QR code of this presentation (on its own, without the site around it) for the buyer's phone */
+const nextSlide=document.getElementById('nextSlide');
+let qrDone=false;
+function makeQR(){
+  if(qrDone)return;const el=document.getElementById('qr'),url=location.origin+location.pathname;
+  // the library loads deferred: until it is in, the address stands in as text, and is cleared once the code is drawn
+  if(window.QRCode){qrDone=true;el.textContent='';el.style.fontSize='';new QRCode(el,{text:url,width:184,height:184,colorDark:'#1B1B1B',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}
+  else{el.style.fontSize='10px';el.textContent=url.replace(/^https?:\/\//,'')}
+}
+document.addEventListener('slide',e=>{if(e.detail===nextSlide)makeQR()});
+addEventListener('load',()=>{if(nextSlide.classList.contains('active'))makeQR()});
+
+/* start where the address says (#4 = the 3D model); listeners above see this first slide too */
+const start=parseInt(location.hash.slice(1));
+slides[0].classList.add('active');go(isNaN(start)?0:start-1);
+</script>
+
+<script type="module">
+/* Explore in 3D: the site's own engine (../js/axo.js, the one behind the Live 3D viewer) on the redesign GLB. Views:
+   the whole house, floors apart, and each floor cut from above; "Look inside" lifts off the container skins and the
+   roof. Build 0-10 = the ten steps below (the GLB tags every part with web_step 0 piers ... 9 roof); it plays by itself
+   the first time the slide is on screen, and again from "Watch it build in 3D" on the How it's built slide. The canvas
+   stays hidden until the GLB has replaced the engine's drawn massing (axo.ready). */
+const MODEL='../assets/models/house-redesigned-v2.glb?v=1';   // same URL as js/main.js, so the browser reuses the download
+const inline=document.documentElement.classList.contains('inline');
+const slide=document.getElementById('isoSlide'),card=document.getElementById('asm3d'),view=document.getElementById('asmView');
+const box=document.getElementById('isoBox'),canvas=document.getElementById('isoCanvas'),msg=document.getElementById('asmMsg');
+const N=10,AZ0=Math.PI/4,EL0=Math.atan2(.82,Math.SQRT2);
+const STEPS=[
+  ['Piers','Piers are set out under the corners of the modules and the deck frame.'],
+  ['North module','The first module, with the kitchen and the stair. Its original red container doors stay at the east end.'],
+  ['Middle module','Living and dining, with the front door at the east end.'],
+  ['South module','The garden side: two sliding glass walls onto the deck, the guest WC and the laundry.'],
+  ['One open space','Steel beams and posts carry the load where the long walls open up; the stair goes in.'],
+  ['Upper north module','Craned onto the first module: the bedroom, the ensuite and the landing.'],
+  ['Upper middle module','Craned onto the second: the walk-in wardrobe, the family bathroom and the studio office.'],
+  ['Windows and fit-out','Windows, sliding walls and doors, then the kitchen, the bathrooms and the furniture.'],
+  ['Deck and pergola','A teak deck wraps two sides, under a pergola on slim charcoal posts.'],
+  ['Terrace and roof','The roof terrace and its timber shade; solar panels and a solar water heater on top.'],
+];
+// the callouts of "Floors apart", named for a buyer (the engine's defaults name the modules: C1, C2 ...)
+const NAMES={1:'Kitchen + stair',2:'Living + dining',3:'Garden side',4:'Steel frame + stair',5:'Bedroom + ensuite',6:'Bathroom + studio',
+  7:'Windows + furniture',8:'Deck + pergola',9:'Terrace + solar roof'};
+const ALL=['shell','steel','frame','glass','timber','interior','accent','floor','furniture','roof','pv','pier'];
+const INSIDE=['shell','interior','accent','floor','furniture','glass','roof'];        // what a plan cut shows, as on the site
+// floor cuts as on the site's "View plan"; zoom is higher than there because this view is framed wider (fit 1.45)
+const PLAN={gf:{at:[6.1,1.0,3.7],zoom:1.9,levels:[1,0,0],cut:2.5},uf:{at:[6.1,3.9,2.5],zoom:1.9,levels:[1,1,0],cut:5.5}};
+const stepList=document.getElementById('stepList'),stepCount=document.getElementById('stepCount'),stepName=document.getElementById('stepName');
+const scrub=document.getElementById('scrub'),playBtn=document.getElementById('playBtn'),insideBtn=document.getElementById('insideBtn');
+let axo=null,starting=null,loaded=false,seen=false,first=true,want=false,t=N,playing=false,raf=0,view3='whole',inside=false;
+const isPlan=()=>view3==='gf'||view3==='uf';
+if(inline)document.getElementById('asmHow').textContent='Drag to turn the house; pinch, or Ctrl + scroll, to zoom. Set the floors apart, see each floor from above, or press play to watch it being built.';
+
+/* the canvas wrapper is sized to the view as it appears on screen and scaled back into the stage */
+function sizeBox(){const s=Math.min(innerWidth/1194,innerHeight/834)||.5;
+  box.style.width=view.offsetWidth*s+'px';box.style.height=view.offsetHeight*s+'px';box.style.transform='scale('+(1/s)+')'}
+addEventListener('resize',sizeBox);sizeBox();
+
+STEPS.forEach(([title,desc],i)=>{const li=document.createElement('li'),b=document.createElement('button');
+  b.innerHTML='<span class="num">'+String(i+1).padStart(2,'0')+'</span><span><b></b><small></small></span>';
+  b.querySelector('b').textContent=title;b.querySelector('small').textContent=desc;
+  b.onclick=()=>{stop();if(isPlan())setView('whole');setT(i+1)};li.appendChild(b);stepList.appendChild(li)});
+
+function ui(){const k=Math.min(N,Math.ceil(t-1e-3)),focus=Math.max(0,k-1),done=t>=N-.01;
+  stepCount.textContent=String(k).padStart(2,'0')+' / '+N;stepName.textContent=done?'Finished house':k>0?STEPS[focus][0]:'The site';
+  stepList.querySelectorAll('button').forEach((b,i)=>{b.classList.toggle('on',!done&&k>0&&i===focus);b.classList.toggle('done',done||i<focus)});
+  scrub.value=t}
+function setT(v){t=v;axo?.setBuild(v);ui()}
+function setPlaying(on){playing=on;playBtn.querySelector('span').textContent=on?'❚❚':'▶';playBtn.setAttribute('aria-label',on?'Pause':'Watch it being built')}
+function stop(){cancelAnimationFrame(raf);if(playing)setPlaying(false)}
+function play(){
+  if(!axo)return;cancelAnimationFrame(raf);
+  if(isPlan())setView('whole');
+  const from=t>=N-.01?0:t,t0=performance.now(),dur=9000*(N-from)/N;
+  if(from===0){setT(0);axo.snap()}
+  setPlaying(true);
+  const tick=now=>{const f=Math.min(1,(now-t0)/dur);setT(from+f*(N-from));
+    if(f<1&&playing)raf=requestAnimationFrame(tick);else setPlaying(false)};
+  raf=requestAnimationFrame(tick)}
+playBtn.onclick=()=>{if(playing)stop();else play()};
+scrub.oninput=()=>{stop();if(isPlan())setView('whole');setT(+scrub.value)};
+
+function layers(){if(!axo)return;
+  axo.setLayer(ALL,true);
+  if(isPlan())axo.setLayer(ALL.filter(k=>!INSIDE.includes(k)),false);
+  else if(inside)axo.setLayer(['shell','roof','pv'],false)}          // look inside: the container skins and the roof come off
+function setView(v,quiet){view3=v;
+  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  if(!quiet)tell({deck:'floors',on:v==='whole'?0:1});      // on the site's tablet: the phone opens its floors too
+  if(!axo)return;
+  if(isPlan()){axo.setExplode(0);axo.setLabels(false);axo.setView(0);axo.setFocus(PLAN[v])}
+  else{axo.setView(1);axo.setFocus({});axo.setOrbit(AZ0,EL0);axo.setExplode(v==='apart'?1:0);axo.setLabels(v==='apart')}
+  layers()}
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{stop();setView(b.dataset.view)});
+insideBtn.onclick=()=>{inside=!inside;insideBtn.setAttribute('aria-pressed',String(inside));if(isPlan())setView('whole');else layers()};
+
+/* turn and zoom: drag turns the model, two fingers zoom, the wheel zooms (with Ctrl / Cmd on the site's tablet, so the
+   page keeps its scroll), double-click resets */
+const pts=new Map();let pinch0=0,zoom0=1;
+const gap=()=>{const [a,b]=[...pts.values()];return Math.hypot(a.x-b.x,a.y-b.y)};
+canvas.addEventListener('pointerdown',e=>{if(!axo)return;canvas.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size===2){pinch0=gap();zoom0=axo.getOrbit().zoom}
+  box.classList.add('drag');if(isPlan())setView('whole')});
+canvas.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p||!axo)return;
+  const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  if(pts.size===1){const o=axo.getOrbit();axo.setOrbit(o.az-dx*.008,o.el+dy*.006)}
+  else if(pinch0)axo.setZoom(zoom0*gap()/pinch0)});
+const end=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch0=0;if(!pts.size)box.classList.remove('drag')};
+canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+canvas.addEventListener('dblclick',()=>{if(!axo)return;axo.resetOrbit();setView(isPlan()?'whole':view3)});
+canvas.addEventListener('wheel',e=>{if(!axo||(inline&&!(e.ctrlKey||e.metaKey)))return;e.preventDefault();axo.setZoom(axo.getOrbit().zoom*Math.exp(-e.deltaY*.0015))},{passive:false});
+
+function maybePlay(){if(!loaded||!slide.classList.contains('active'))return;
+  if(want){want=false;first=false;play();return}
+  if(first&&seen){first=false;play()}}
+function init(){
+  if(!starting)starting=(async()=>{
+    try{
+      const {createAxo}=await import('../js/axo.js?v=32');
+      axo=createAxo(canvas,{mode:'story',fit:1.45,model:MODEL,sheets:false,look:'real',names:NAMES});
+    }catch(e){msg.textContent='The live 3D model needs WebGL and an internet connection (three.js loads from a CDN).';console.warn('3D view unavailable',e);return}
+    setView(view3,true);axo.setBuild(t);axo.snap();
+    loaded=await axo.ready;
+    if(!loaded){msg.textContent='The live 3D model could not load here. Open the presentation from the website: the model does not load from a file on disk.';return}
+    card.classList.add('ready');maybePlay();
+  })();
+  return starting}
+// the build waits until the 3D is really on screen (the tablet on the site may still be below the fold)
+new IntersectionObserver(es=>{seen=es[0].intersectionRatio>.4;maybePlay()},{threshold:[0,.4]}).observe(card);
+document.addEventListener('build3d',()=>{want=true;init().then(maybePlay)});
+function onSlide(s){
+  if(s===slide){sizeBox();init().then(maybePlay)}
+  else{stop();init()}                                        // the 3D is the fourth slide: load it straight away
+}
+document.addEventListener('slide',e=>onSlide(e.detail));
+onSlide(document.querySelector('.slide.active'));
+</script>
+</body>
+</html>

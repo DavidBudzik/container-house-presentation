@@ -10,14 +10,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&family=Heebo:wght@300;400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=77">
+<link rel="stylesheet" href="site.css?v=80">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" defer></script>
-<script type="module" src="js/main.js?v=108"></script>
+<script type="module" src="js/main.js?v=113"></script>
 <script type="module" src="js/compare.js?v=1"></script>
-<script type="module" src="js/tools.js?v=3"></script>
+<script type="module" src="js/tools.js?v=4"></script>
 </head>
 <body>
 
@@ -26,6 +26,7 @@
   <nav>
     <a href="#demo" data-i18n="nav.demo">Demonstration</a>
     <a href="#explore" data-i18n="nav.explore">Live 3D</a>
+    <a href="#tools" data-i18n="nav.pres">Presentation</a>
     <a href="#work" data-i18n="nav.work">Approach</a>
     <a href="#packages" data-i18n="nav.outputs">Packages</a>
     <a href="#about" data-i18n="nav.about">About</a>
@@ -258,42 +259,32 @@
 </section>
 
 <!-- TOOLS: what the model can become for a seller's sales team, shown on a tablet (the presenter for meetings in the sales
-     office) and a phone (the link the buyer opens afterwards). Both screens run the live model: one WebGL renderer draws
-     both (js/tools.js). Finishes = the four illustrative palettes of #finishes; floors apart and the send-to-buyer
-     notification are the app concept. The devices and the app screens are drawn in CSS (site.css, "tools").
+     office) and a phone (the link the buyer opens afterwards). Since 2026-11-17 (user: "replace the presentation here to
+     the new one and cancel the second ... keep the 2 devices ... show the 3d model slide open by default") the tablet
+     runs the sales presentation (presentation/index.html) opened on its live 3D slide; the separate #presentation
+     section of that day is gone. The phone runs the live model (js/tools.js) and follows the deck: its palette, floors
+     apart and "Send to buyer". Finishes = the illustrative palettes of #finishes. Devices drawn in CSS (site.css, "tools").
      Took the place of the Lifestyle section (#life, four AI-assisted editorial tiles) on 2026-11-15, the user's choice;
      it stood in for #scenes for a moment, and #scenes is back. The Lifestyle markup is in git (8ce4699) and in
      archive/previous-project-files/bzik-site-unused/lifestyle-section.html. -->
 <section class="tools gut" id="tools">
   <header class="section-head"><div><p class="label" data-i18n="tl.k">Sales tools · developed per project</p><h2 data-i18n="tl.t">From the sales table to the buyer's phone.</h2></div>
-    <p class="muted" data-i18n="tl.b">The same 3D model can run the tools your sales team uses every day: a tablet presentation for meetings in the sales office, and a link buyers open on their phones afterwards. I design and build each tool around your product and the way you sell.</p></header>
+    <p class="muted" data-i18n="tl.b">The same 3D model runs the tools your sales team uses every day: a presentation on the tablet for meetings in the sales office, and a link buyers open on their phones afterwards. The tablet below runs the presentation itself, opened on its live 3D model. I design and build each tool around your product and the way you sell.</p></header>
   <div class="tools-stage" id="toolsStage">
     <div class="tl-set">
-      <!-- tablet, landscape: the presenter. App layout in points of a 1194 × 834 screen (--u) -->
+      <!-- tablet, landscape: the presenter. Its screen runs the sales presentation itself (presentation/index.html,
+           ?mode=inline, opened on its live 3D slide, #4): js deckTablet() makes the iframe when the section comes near.
+           The deck posts what the seller does (slide, palette, floors apart, "Send to buyer") up to the page, and
+           js/tools.js turns it into the buyer's side on the phone. Under 760 px the screen is too small to use: the poster
+           (a capture of the deck's 3D slide) stays and a tap opens the full screen (#deckLb). Until 2026-11-17 this
+           screen held a drawn app concept (dock with floors and finishes, "Send to buyer"); in git before that date. -->
       <div class="dev tablet">
         <span class="dev-shadow" aria-hidden="true"></span>
         <span class="dev-key k-top" aria-hidden="true"></span><span class="dev-key k-v1" aria-hidden="true"></span><span class="dev-key k-v2" aria-hidden="true"></span>
         <div class="dev-body"><div class="dev-glass">
-          <div class="scr" data-view="tablet" data-az=".62" data-el=".34" data-fov="30" data-fit="1.16" data-lift=".05" data-spin=".085">
-            <img class="scr-still" src="assets/img/tools-tablet.webp" alt="" width="1616" height="1114" loading="lazy" decoding="async">
-            <canvas class="scr-gl" tabindex="0" aria-label="Tablet presenter: the live 3D model of the house. Drag or use the arrow keys to turn it."></canvas>
-            <div class="sb" aria-hidden="true"><span>10:24</span><span class="sb-i"><svg viewBox="0 0 16 12"><path d="M8 12 5.7 9.6a3.3 3.3 0 0 1 4.6 0Zm-3.6-3.7L3 6.9a7 7 0 0 1 10 0l-1.4 1.4a5 5 0 0 0-7.2 0ZM1.4 5.3 0 3.9a11.3 11.3 0 0 1 16 0l-1.4 1.4a9.3 9.3 0 0 0-13.2 0Z"/></svg><svg viewBox="0 0 27 12"><rect x=".6" y=".6" width="22.6" height="10.8" rx="3.1" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".4"/><rect x="2.3" y="2.3" width="16.4" height="7.4" rx="1.7"/><path d="M24.9 4v4c.8-.3 1.4-1.1 1.4-2s-.6-1.7-1.4-2Z" opacity=".45"/></svg></span></div>
-            <div class="ap-bar">
-              <div class="ap-id"><span class="ap-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="12.6" width="18" height="6.6" rx="1.1"/><rect x="3" y="4.8" width="12.4" height="6.6" rx="1.1"/></svg></span>
-                <span><b data-i18n="tl.app">Container House</b><em data-i18n="tl.app.sub">Demonstration project · 5 × 40 ft HC</em></span></div>
-              <button type="button" class="ap-send" data-send><svg class="go" viewBox="0 0 20 20" aria-hidden="true"><path d="M18 2 8.6 11.4M18 2l-5.8 16-3.6-6.6L2 7.8 18 2Z"/></svg><svg class="ok" viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10.5 4 4 8-9"/></svg><span class="s1" data-i18n="tl.send">Send to buyer</span><span class="s2" data-i18n="tl.sent">Sent</span></button>
-            </div>
-            <div class="ap-dock">
-              <div class="ap-seg" role="group" aria-label="View"><button type="button" data-floors="0" aria-pressed="true" data-i18n="tl.v0">Whole house</button><button type="button" data-floors="1" aria-pressed="false" data-i18n="tl.v1">Floors apart</button></div>
-              <div class="ap-fin"><span class="ap-k"><em data-i18n="tl.fin">Finish</em><b class="tl-fin-name">As designed</b></span>
-                <div class="sw" role="group" aria-label="Finish">
-                  <button type="button" data-fin="0" aria-pressed="true" style="--a:#ECE7DC;--b:#C29A6B"><span data-i18n="cmp.ref">As designed</span></button>
-                  <button type="button" data-fin="1" aria-pressed="false" style="--a:#4B504F;--b:#CFAE78"><span data-i18n="cmp.o1">Charcoal &amp; larch</span></button>
-                  <button type="button" data-fin="2" aria-pressed="false" style="--a:#8D927B;--b:#B58D58"><span data-i18n="cmp.o2">Olive &amp; oak</span></button>
-                  <button type="button" data-fin="3" aria-pressed="false" style="--a:#C98F6C;--b:#7B5B3E"><span data-i18n="cmp.o3">Terracotta &amp; walnut</span></button>
-                  <button type="button" data-fin="4" aria-pressed="false" style="--a:#D8C7A4;--b:#2F3231"><span data-i18n="cmp.o4">Sand &amp; black steel</span></button>
-                </div></div>
-            </div>
+          <div class="scr deck" id="deckScreen" data-src="presentation/index.html?v=5&amp;mode=inline#4">
+            <img class="deck-poster" src="assets/img/deck-tablet.jpg" alt="The sales presentation on the tablet, open on the live 3D model of the house" width="1194" height="834" loading="lazy" decoding="async">
+            <button type="button" class="deck-open" data-deck><span><span data-i18n="tl.full">Open full screen</span> <i class="arr">↗</i></span></button>
           </div>
           <i class="dev-cam" aria-hidden="true"></i>
         </div></div>
@@ -319,7 +310,7 @@
                   <button type="button" data-fin="3" aria-pressed="false" style="--a:#C98F6C;--b:#7B5B3E"><span data-i18n="cmp.o3">Terracotta &amp; walnut</span></button>
                   <button type="button" data-fin="4" aria-pressed="false" style="--a:#D8C7A4;--b:#2F3231"><span data-i18n="cmp.o4">Sand &amp; black steel</span></button>
                 </div></div>
-              <div class="ph-facts"><div><b>5</b><span data-i18n="tl.f1">containers</span></div><div><b>2</b><span data-i18n="tl.f2">storeys</span></div><div><b>29.7 m²</b><span data-i18n="tl.f3">roof terrace</span></div></div>
+              <div class="ph-facts"><div><b>2</b><span data-i18n="tl.f1">floors</span></div><div><b>≈ 149 m²</b><span data-i18n="tl.f2">five modules</span></div><div><b>29.7 m²</b><span data-i18n="tl.f3">roof terrace</span></div></div>
               <span class="ph-cta" aria-hidden="true" data-i18n="tl.ask">Ask the sales team</span>
               <i class="ph-home" aria-hidden="true"></i>
             </div>
@@ -329,17 +320,22 @@
         </div></div>
       </div>
       <!-- callouts: UX notes around the devices, styled like notifications. The cards sit in artboard units (site.css,
-           "callouts"); js/tools.js draws each card's arrow to its live target, so the arrows follow the layout and, in
-           Hebrew, the mirrored app. Hidden on narrow screens, where the three notes under the stage say the same. -->
+           "callouts"); js/tools.js draws each card's arrow to its live target, inside the presentation's frame too (Send
+           to buyer, the 3D view, Floors apart, the next-slide button), so the arrows follow the layout; a card whose
+           target is not on the slide shown fades out. Hidden on narrow screens, where the notes under the stage say the same. -->
       <div class="tl-notes" aria-hidden="true">
         <svg class="tl-arrows"></svg>
         <div class="tl-note n-flow" data-note="flow"><i class="tn-ico"><svg viewBox="0 0 20 20"><path d="M18 2 8.6 11.4M18 2l-5.8 16-3.6-6.6L2 7.8 18 2Z"/></svg></i><span><b data-i18n="tl.c1t">Send it to the buyer</b><span data-i18n="tl.c1b">The link lands on their phone.</span></span></div>
         <div class="tl-note n-drag" data-note="drag"><i class="tn-ico"><svg viewBox="0 0 20 20"><path d="M3.6 9.4a6.5 6.5 0 0 1 11.5-4.1M16.4 10.6a6.5 6.5 0 0 1-11.5 4.1"/><path d="M15.4 1.9v3.8h-3.8M4.6 18.1v-3.8h3.8"/></svg></i><span><b data-i18n="tl.c2t">Drag to turn</b><span data-i18n="tl.c2b">Both screens run the live model.</span></span></div>
-        <div class="tl-note n-floors" data-note="floors"><i class="tn-ico"><svg viewBox="0 0 20 20"><path d="m10 2.6 7.4 3.9L10 10.4 2.6 6.5Z"/><path d="m2.6 10.1 7.4 3.9 7.4-3.9M2.6 13.6l7.4 3.9 7.4-3.9"/></svg></i><span><b data-i18n="tl.c3t">Open the floors</b><span data-i18n="tl.c3b">Every room, seen from above.</span></span></div>
-        <div class="tl-note n-finish" data-note="finish"><i class="tn-ico"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.2"/><path class="f" d="M15.1 4.9a7.2 7.2 0 0 1-10.2 10.2Z"/></svg></i><span><b data-i18n="tl.c4t">Try a finish</b><span data-i18n="tl.c4b">Palettes change on the model.</span></span></div>
+        <div class="tl-note n-floors" data-note="floors"><i class="tn-ico"><svg viewBox="0 0 20 20"><path d="m10 2.6 7.4 3.9L10 10.4 2.6 6.5Z"/><path d="m2.6 10.1 7.4 3.9 7.4-3.9M2.6 13.6l7.4 3.9 7.4-3.9"/></svg></i><span><b data-i18n="tl.c3t">Set the floors apart</b><span data-i18n="tl.c3b">The buyer's phone follows.</span></span></div>
+        <div class="tl-note n-slides" data-note="slides"><i class="tn-ico"><svg viewBox="0 0 20 20"><path d="M2.6 6.6h11.2v9.6H2.6Z"/><path d="M6.2 3.6h11.2v9.6"/></svg></i><span><b data-i18n="tl.c4t">Twelve slides</b><span data-i18n="tl.c4b">Plans, rooms, colours and more.</span></span></div>
       </div>
     </div>
-    <p class="tl-hint"><span class="hint-hand" aria-hidden="true"></span><span data-i18n="tl.hint">Live model on both screens · drag to turn</span></p>
+    <p class="tl-hint"><span class="hint-hand" aria-hidden="true"></span><span data-i18n="tl.hint">Live 3D · drag to turn</span></p>
+  </div>
+  <div class="tl-bar">
+    <p class="tl-say" data-i18n="tl.say">The tablet runs the presentation itself: swipe, or use its arrows, for all 12 slides.</p>
+    <button type="button" class="btn" data-deck><span data-i18n="tl.full">Open full screen</span> <i class="arr">↗</i></button>
   </div>
   <!-- the same controls at a size a thumb can use, for phones (the tablet's own dock is too small there) -->
   <div class="tl-ctl">
@@ -355,14 +351,24 @@
   </div>
   <ol class="tl-names" hidden><li data-i18n="cmp.ref">As designed</li><li data-i18n="cmp.o1">Charcoal &amp; larch</li><li data-i18n="cmp.o2">Olive &amp; oak</li><li data-i18n="cmp.o3">Terracotta &amp; walnut</li><li data-i18n="cmp.o4">Sand &amp; black steel</li></ol>
   <div class="tl-feats">
-    <div data-reveal><b>01</b><h3 data-i18n="tl.1t">Tablet presenter</h3><p data-i18n="tl.1b">Turn the house, set the floors apart and switch finishes while you walk the buyer through it, at the table in the sales office.</p></div>
-    <div data-reveal><b>02</b><h3 data-i18n="tl.2t">A link for the buyer</h3><p data-i18n="tl.2b">Send the presentation after the meeting. It opens in the phone's browser, with nothing to install, so the conversation can go on at home.</p></div>
+    <div data-reveal><b>01</b><h3 data-i18n="tl.1t">Tablet presentation</h3><p data-i18n="tl.1b">Plans, the live 3D model, every room, colours and materials, and how the house comes together: twelve slides for the meeting at the sales table.</p></div>
+    <div data-reveal><b>02</b><h3 data-i18n="tl.2t">A link for the buyer</h3><p data-i18n="tl.2b">Send it after the meeting, or let the buyer scan the QR code on the last slide. It opens in the phone's browser, with nothing to install, so the conversation can go on at home.</p></div>
     <div data-reveal><b>03</b><h3 data-i18n="tl.3t">Built around your sales process</h3><p data-i18n="tl.3b">Your brand, your range and the way buyers reach you. Options, prices and availability can come from your own data.</p></div>
   </div>
   <div class="tl-foot">
-    <p class="note" data-i18n="tl.note">Both screens run the live 3D model of this demonstration; the finishes are the four illustrative palettes above. The app screens are a concept: each tool is designed and built for its project.</p>
+    <p class="note" data-i18n="tl.note">The tablet runs a working 12-slide presentation of this demonstration, in English; the phone screen is a concept. Both run the live 3D model. In the presentation, the renders, plans and 3D come straight from the model; the room images and walkthrough clips are finished with AI assistance, and each slide says so.</p>
     <a class="btn ghost" href="mailto:bzik.david@gmail.com?subject=Sales%20tools"><span data-i18n="tl.cta">Discuss a sales tool</span> <i class="arr">→</i></a>
   </div>
+  <!-- the presentation full screen (js deckBox), opened at the slide the tablet shows; the iframe is made on open and
+       dropped on close, so the deck's videos and its WebGL model never keep running behind the page -->
+  <dialog class="lightbox deck-lb" id="deckLb" data-src="presentation/index.html?v=5&amp;mode=full" aria-labelledby="deckLbT">
+    <div class="dk-bar">
+      <span class="dk-t" id="deckLbT"><b data-i18n="tl.lb.t">Sales presentation</b><span class="dk-sub" data-i18n="tl.lb.sub">Container House · 12 slides · ← → to move</span></span>
+      <a class="dk-tab" href="presentation/index.html?v=5" target="_blank" rel="noopener"><span data-i18n="tl.lb.tab">Open in a new tab</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 4H4v12h12v-4M11 3h6v6M17 3l-8 8"/></svg></a>
+      <button type="button" class="lb-close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dk-frame"></div>
+  </dialog>
 </section>
 
 <!-- #scenes is off the page for now (2026-11-15, user: "lets remove for now"); its markup is in
@@ -416,13 +422,23 @@
     <p class="muted" data-i18n="out.b">Order one, or combine them. Everything comes from the same model, so drawings, images and films show the same building.</p></header>
   <div class="outs">
     <div data-reveal><figure class="card out-ex sheet"><img src="assets/img/plan-gf-natural-v4-card.webp" alt="Example: ground floor plan with its furniture (sofa, dining table for eight, kitchen, stair, WC and laundry) and the wraparound deck, drawn from the model" width="1500" height="1125" loading="lazy"></figure><b>01</b><h3 data-i18n="out.1t">Drawings</h3><p data-i18n="out.1b">Plans, sections, elevations and assembly drawings, drawn to scale from the model.</p><span>PDF · A3 / A1</span></div>
-    <div data-reveal><figure class="card out-ex"><img src="assets/img/pergola-ivy-editorial-v3.webp" alt="Example: the house from the garden, an AI-assisted editorial image" loading="lazy"></figure><b>02</b><h3 data-i18n="out.2t">Exterior images</h3><p data-i18n="out.2b">Day, golden hour and dusk, on your site or a neutral one.</p><span>JPG / PNG · up to 4K</span></div>
+    <!-- 02: four Cycles renders of the model (Blender Render/16-11-2026, 2026-11-17, user: "show here the new images from
+         the attached folder as a gallery"), cycling in the card; a click or the corner button opens them large (js outGallery) -->
+    <div data-reveal><figure class="card out-ex g4" data-gallery role="group" aria-roledescription="gallery" aria-label="Exterior renders of the house">
+      <img class="on" src="assets/img/render-south.jpg" data-full="assets/img/render-south-2560.jpg" width="1280" height="720" alt="Example, rendered from the 3D model: the long garden side, with living and dining behind two glass walls, the deck under the pergola and the upper floor above" loading="lazy">
+      <img src="assets/img/render-entrance.jpg" data-full="assets/img/render-entrance-2560.jpg" width="1280" height="720" alt="Example, rendered from the 3D model: the entrance end, the front door beside the oak boarding under the pergola" loading="lazy">
+      <img src="assets/img/render-west.jpg" data-full="assets/img/render-west-2560.jpg" width="1280" height="720" alt="Example, rendered from the 3D model: the west end, tall glass on both floors and the roof terrace under its timber shade" loading="lazy">
+      <img src="assets/img/render-garden.jpg" data-full="assets/img/render-garden-2560.jpg" width="1280" height="720" alt="Example, rendered from the 3D model: the house from the garden, past an olive tree and a dining pergola" loading="lazy">
+      <button type="button" class="out-open" aria-label="Open the renders large"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <div class="g4-nav"><button type="button" class="g4-prev" aria-label="Previous render"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 4-6 6 6 6"/></svg></button><span class="g4-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><button type="button" class="g4-next" aria-label="Next render"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 4 6 6-6 6"/></svg></button></div>
+      <span class="g4-cap" hidden data-i18n="out.2cap">Rendered from the 3D model · the garden is illustrative</span>
+    </figure><b>02</b><h3 data-i18n="out.2t">Exterior images</h3><p data-i18n="out.2b">Day, golden hour and dusk, on your site or a neutral one.</p><span>JPG / PNG · up to 4K</span></div>
     <div data-reveal><figure class="card out-ex"><img src="assets/img/living-refined-editorial-v3.webp" alt="Example: the furnished living room, an AI-assisted editorial image" loading="lazy"></figure><b>03</b><h3 data-i18n="out.3t">Interior images</h3><p data-i18n="out.3b">Furnished rooms at the model's scale, styled for your audience.</p><span>JPG / PNG · up to 4K</span></div>
     <div data-reveal><figure class="card out-ex draw"><a href="#explore" aria-label="Open the interactive 3D viewer"><img src="assets/img/live-3d-cover.jpg" alt="The live 3D model of the redesigned house, as the interactive viewer shows it" loading="lazy"><span class="go"><span data-i18n="out.4go">Open the live model</span><i aria-hidden="true">↑</i></span></a></figure><b>04</b><h3 data-i18n="out.4t">Interactive 3D</h3><p data-i18n="out.4b">The live model above, with your branding, for your website and your meetings.</p><span>Web · embeddable</span></div>
     <div data-reveal><figure class="card out-ex film" data-open="assets/video/exploded-axo.mp4" data-poster="assets/video/exploded-axo-poster.jpg" data-ratio="1080/1350"><button type="button" class="out-open" aria-label="Play the assembly film large"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><video src="assets/video/exploded-axo.mp4" poster="assets/video/exploded-axo-poster.jpg" muted loop playsinline preload="none" data-inview aria-label="Example: film of the redesigned house coming apart layer by layer, from roof and solar down to piers and deck, then settling back"></video></figure><b>05</b><h3 data-i18n="out.5t">Assembly film</h3><p data-i18n="out.5b">Piers to roof in one film, so the build order explains itself.</p><span>MP4 · 16:9 + 9:16</span></div>
     <div data-reveal><figure class="card out-ex"><video src="assets/video/walk/room-stair.mp4" poster="assets/video/walk/room-stair.jpg" muted loop playsinline preload="none" data-inview aria-label="Example: a walkthrough clip climbing the white stair with its oak rails, AI-finished over the model's camera path"></video></figure><b>06</b><h3 data-i18n="out.6t">Walkthrough film</h3><p data-i18n="out.6b">An eye-level camera path through every room.</p><span>MP4 · Full HD / 4K · 16:9 + 9:16</span></div>
   </div>
-  <p class="note" data-i18n="out.note">Examples shown: the drawing, the live model and the assembly film come straight from the 3D model. The two stills and the walkthrough clip are finished with AI assistance over its views and camera path.</p>
+  <p class="note" data-i18n="out.note">Examples shown: the drawing, the exterior renders, the live model and the assembly film come straight from the 3D model (the garden in the renders is illustrative). The interior image and the walkthrough clip are finished with AI assistance over its views and camera path.</p>
   <!-- not built into this demonstration: offered as work developed for a client -->
   <p class="label dev-k" data-i18n="dev.k">Beyond this demonstration · developed per project</p>
   <div class="stats dev">
@@ -434,7 +450,7 @@
 </section>
 
 <!-- HOW -->
-<section class="block how-sec" id="how" data-theme="dark">
+<section class="block how-sec" id="how">
  <div class="how-card">
   <header class="section-head"><div><p class="label" data-i18n="how.k">How it works</p><h2 data-i18n="how.t">From plans to presentation in four steps.</h2></div></header>
   <ol class="how" id="howSteps">
@@ -503,7 +519,7 @@
 <footer class="foot inset">
   <div class="foot-card">
     <a class="logo" href="#top" aria-label="BZIK"></a>
-    <nav><a href="#demo" data-i18n="nav.demo">Demonstration</a><a href="#explore" data-i18n="nav.explore">Live 3D</a><a href="#work" data-i18n="nav.work">Approach</a><a href="#packages" data-i18n="nav.outputs">Packages</a><a href="#about" data-i18n="nav.about">About</a></nav>
+    <nav><a href="#demo" data-i18n="nav.demo">Demonstration</a><a href="#explore" data-i18n="nav.explore">Live 3D</a><a href="#tools" data-i18n="nav.pres">Presentation</a><a href="#work" data-i18n="nav.work">Approach</a><a href="#packages" data-i18n="nav.outputs">Packages</a><a href="#about" data-i18n="nav.about">About</a></nav>
     <p class="foot-note">David Budzik · BZIK · © 2026</p>
   </div>
 </footer>

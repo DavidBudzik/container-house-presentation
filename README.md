@@ -30,7 +30,9 @@ js/
   compare.js      finishes comparison (#finishes): chips pick a finish, drag to compare it with the house as designed
   explore.js      "Explore it yourself" viewer: orbit, modes, floors, build scrubber
   axo.js          Three.js model renderer used by the viewer
-  tools.js        sales tools (#tools): the tablet and phone screens, both drawn by one WebGL renderer
+  tools.js        sales tools (#tools): the phone's live model, the link from the presentation on the tablet, the callouts
+presentation/
+  index.html      the seller's sales presentation (12 slides), live on the tablet in #tools; uses ../assets and ../js/axo.js
 assets/
   img/            renders, drawings and fallbacks
   models/         house-redesigned-v2.glb for the 3D viewer
@@ -59,8 +61,8 @@ since 2026-11-14:
 - Only what works on this page is described as available. What it does not have (plans with clickable rooms, free
   virtual tours, live finish configurators, mobile and tablet apps) sits in the "Beyond this demonstration" strip
   under the deliverables, as work developed per project. The `#tools` section shows the tablet and phone tools the
-  same way: its label says "developed per project" and its note calls the app screens a concept, while the model on
-  them is live.
+  same way: its label says "developed per project" and its note calls the phone screen a concept, while the tablet
+  runs the working sales presentation and both run the live model.
 
 ## The walkthrough clips
 
@@ -201,7 +203,8 @@ The `hf-*.jpg` images they replaced moved to the archive on 2026-11-16.
 
 ## The editorial images
 
-Every photograph on the page comes from `Architectural Editorial - Consistent v3` in the model project (since
+Every photograph on the page, except the four exterior renders of deliverable 02 (see "The exterior renders"), comes
+from `Architectural Editorial - Consistent v3` in the model project (since
 2026-11-15; the user: "use only images of this set for the final website version"): 16 AI-assisted editorial images,
 each one generated over a camera view of the model. They are the 16 views of the earlier Olive Grove v2 set,
 regenerated with the dining room as one shared colour reference: warm-neutral daylight, warm-white plaster, restrained
@@ -220,11 +223,33 @@ as the smaller `srcset` entry. The 4K exports are bicubic enlargements, so 1536 
 | hero | `mediterranean-blue-sky` |
 | exterior section | `pergola-ivy` |
 | rooms list | `entry-b`, `living-refined`, `dining-b`, `kitchen-c`, `deck-a`, `stair-b`, `landing-d`, `ensuite-c`, `office-c` |
-| deliverables covers 02 / 03 | `pergola-ivy`, `living-refined` (card 06 plays the stair clip) |
+| deliverables cover 03 | `living-refined` (02 shows the four renders since 2026-11-17; card 06 plays the stair clip) |
 | closing card | `deck-b` |
 
 `entry-c`, `office-b`, `ensuite-b` and `landing-e` were the four Lifestyle tiles; that section made way for the sales
 tools on 2026-11-15, and the four files stay in `assets/img/`, unused.
+
+## The exterior renders
+
+Four Cycles renders of the model in its Mediterranean setting, 3840 × 2160 PNG in `Blender Render/16-11-2026/` of the
+model project (`outdoor-front-01` … `04`, rendered in Blender, Cycles, on 2026-11-16 and 17). Web
+copies in `assets/img/`, made with .NET System.Drawing (bicubic, JPEG): `render-<view>.jpg` at 1280 × 720 (q80) for
+cards and thumbnails, `render-<view>-2560.jpg` at 2560 × 1440 (q82) for full-bleed slides and the large view.
+
+| File | Source | View |
+| --- | --- | --- |
+| `render-entrance` | `outdoor-front-01` | the entrance end: front door, oak boarding, pergola |
+| `render-south` | `outdoor-front-02` | the long garden side: living and dining behind the glass |
+| `render-west` | `outdoor-front-03` | the west end: tall glass on both floors, the roof terrace |
+| `render-garden` | `outdoor-front-04` | from the garden, past an olive tree and the dining pergola |
+
+The house in them is the model as designed; the planting and the setting are illustrative, and every place that
+shows them says "Rendered from the 3D model · the garden is illustrative" (Hebrew key `out.2cap`). Since 2026-11-17
+(user: "show here the new images from the attached folder as a gallery") they are deliverable 02, "Exterior images":
+the card (`.g4`, `outGallery()` in `main.js`) cycles them every 3.6 s while it is on screen, holds while hovered,
+focused or opened, never moves with reduced motion, and has ‹ dots › at its foot; a click or the corner button opens
+`galleryBox()`, a dialog with ← → keys (mirrored in Hebrew), swipe, the count and the caption. The presentation uses
+them on slides 1, 2, 7, 9 and 12 (see "The interactive presentation").
 
 The hero, the exterior section and nine of the rooms play a walkthrough clip over their still (see "The walkthrough
 clips"). The clips were finished with the Olive Grove v2 images as reference, before v3 existed. The images they
@@ -261,57 +286,148 @@ once.
 
 ## The sales tools section
 
-`#tools` (after `#rooms`, before `#film`) shows what the model can become for a seller: a tablet presenter for
+`#tools` (after `#rooms`, before `#film`) shows what the model can become for a seller: a presentation on a tablet for
 meetings in the sales office and the link a buyer opens on a phone afterwards. It took the place of the Lifestyle
 section (`#life`, four AI-assisted editorial tiles) on 2026-11-15, the user's choice. The removed markup, its CSS and
 its Hebrew keys (`gal.*`) are in git (`8ce4699`) and in `archive/previous-project-files/bzik-site-unused/lifestyle-section.html`
 of the model project. (For a moment the same day it stood in for `#scenes` instead; that section is back as it was,
 and `scenes-section.html` beside it holds the copy made then.)
 
+Since 2026-11-17 (user: "replace the presentation here to the new one and cancel the second ... keep the 2 devices,
+just adjust to new presentation, show the 3d model slide open by default") the tablet runs the sales presentation
+(`presentation/index.html`, see "The interactive presentation") opened on its live 3D slide, and the phone, the
+buyer's side, follows what the seller does in it. The separate `#presentation` section of that day is gone; the nav
+link "Presentation" (`nav.pres`) now points at `#tools`. Until then the tablet showed a drawn app concept (a dock
+with the floors switch and the finish swatches, "Send to buyer" in its bar, the model drawn by `tools.js`); that
+markup and its CSS are in git before this change.
+
 - **The devices** are drawn in CSS. The first block ("tools") builds them in full (metal band, keys, camera, sheen,
   studio sweep); the block "tools, minimal mockups" at the end of `site.css` overrides that with the look the user
   chose: flat black bodies, one soft shadow, the tablet and the phone side by side, the tablet set higher. Corners are
   one outer radius per device (`--r`, in `cqw` of that device) and the screen's corner is `--r` less the bezel (`--bez`),
-  so the curves stay concentric at any size; tablet 3.2 / 2.2, phone 10.5 / 2.6 `cqw`. A 100 × 58 artboard (`--k`,
-  100 × 128 under 760 px) scales to fit the stage; inside a device `cqw` is 1 % of its width; inside a screen `--u` is
-  one point of the app's own layout (1194 × 834 on the tablet, 393 × 852 on the phone), so the app scales with its
-  device like a picture.
-- **Callouts**: four notification-style cards around the devices (send it to the buyer, drag to turn, open the floors,
-  try a finish; keys `tl.c1t` … `tl.c4b`), placed in artboard units (block "callouts" in `site.css`). `callouts()` in
-  `tools.js` draws a thin ink arrow from each card to its live target (`ARROWS`: the Send button and the top of the
-  phone, the model, the floors switch, the swatches), so the arrows follow the layout; it redraws on resize, on a
-  language switch and once the fonts are in. In Hebrew the app mirrors, so the two cards under the tablet trade places
-  and the send arrow reaches across to the button. Since 2026-11-15 (user: "only straight orthogonal lines") the
-  leaders are orthogonal only (`route()`): one straight line when card and target share a band of x or y, else one
-  square elbow out of the side facing the target; an `ARROWS` entry may force the first axis per language with
-  `first: ['h' | 'v', ...]`. The icon tiles take `--note-ico` (terracotta `#C8502A`, set on `.tl-notes`). The cards rise and the arrows draw once the devices have settled
-  (class `.npre` lifted 1.4 s after `.in`). Hidden at 1200 px and below, where the hint pill and the three notes under
-  the stage say the same.
-- **The 3D**: `js/tools.js` loads the viewer's GLB once (about 1.5 screens before the section arrives), merges it per
-  level, part and material (about 125 draw calls), and renders the tablet view and the phone view into two regions of
-  one offscreen canvas, then copies each into its screen's 2D canvas. Each screen has its own camera (drag, arrow
-  keys, momentum, then a slow turntable). Sun shadows are drawn only when the geometry moves. The build is cut into
-  slices of about 10 ms so it never stalls scrolling. A device that cannot keep up gets fewer pixels.
-- **Finishes** are the four illustrative palettes of `#finishes` (`drawings/compose_finishes.py`), put on the model's
-  own parts by Blender object name (`ROLES` in `tools.js`): exterior walls and the white steel surrounds, the roof
-  fascia, the pergola fins, the deck and the exterior oak accents. The swatch shows the palette colour; the model gets
-  it at 80 %, because the sun lifts it.
+  so the curves stay concentric at any size; tablet 3.2 / 2.2, phone 10.5 / 2.6 `cqw`. A 100 × 64 artboard (`--k`,
+  100 × 128 under 760 px) scales to fit the stage; inside a device `cqw` is 1 % of its width; inside the phone's
+  screen `--u` is one point of its app's layout (393 × 852), so the app scales with the device like a picture.
+- **The tablet** (`#deckScreen`): `deckTablet()` in `main.js` makes the deck's iframe
+  (`presentation/index.html?v=5&mode=inline#4`) when the section comes within 900 px, and fades it in over the poster
+  once loaded. The screen and the deck's stage have one shape (1194 × 834), so the deck fills it edge to edge. Under
+  760 px the screen is too small to use: the poster stays (`.static`) and a tap opens the full screen. "Open full
+  screen" under the stage (hidden under 760 px) opens the dialog `#deckLb` (`deckBox()`) at the slide the tablet shows.
+- **The link between them**: in `?mode=inline` inside a frame the deck adds "Send to buyer" to its app bar and posts
+  to the page (same origin only): `{deck:'slide', n}` on every slide, `{deck:'finish', i}` when a palette is picked on
+  Colours (slide 8), `{deck:'floors', on}` when its 3D view changes (Floors apart, Ground floor, Upper floor = 1, Whole
+  house = 0) and `{deck:'send'}`. `tools.js` paints the phone's model in that palette, opens or closes its floors, and
+  on "send" shows the phone's notification and eases the phone back to its opening angle. It runs one way: the
+  phone's own swatches (and the thumb-size row under 760 px) change the phone only.
+- **Callouts**: four notification-style cards around the devices (send it to the buyer, drag to turn, set the floors
+  apart, twelve slides; keys `tl.c1t` … `tl.c4b`), placed in artboard units (block "callouts" in `site.css`).
+  `callouts()` in `tools.js` draws a thin arrow from each card to its live target (`ARROWS`): `to` = an element of the
+  page (the top of the phone), `deck` = an element inside the deck, read through the same-origin frame (`inDeck()`:
+  `#sendBtn`, `#asmView`, the Floors apart button, `#nextBtn`). A target on a slide that is not shown counts as
+  missing, and a card with no target left fades out (`.off`), so on any slide but the 3D one only "Send it to the
+  buyer" and "Twelve slides" stay. It redraws on resize, a language switch, the fonts, the deck's load and each
+  `{deck:'slide'}`. The deck is English and never mirrors, so the cards keep their places in Hebrew. Since 2026-11-15
+  (user: "only straight orthogonal lines") the leaders are orthogonal only (`route()`): one straight line when card and
+  target share a band of x or y, else one square elbow out of the side facing the target; an `ARROWS` entry may force
+  the first axis per language with `first: ['h' | 'v', ...]`. The icon tiles take `--note-ico` (terracotta `#C8502A`,
+  set on `.tl-notes`). The cards rise and the arrows draw once the devices have settled (class `.npre` lifted 1.4 s
+  after `.in`). Hidden at 1200 px and below, where the hint pill and the notes under the stage say the same.
+- **The phone's 3D**: `js/tools.js` loads the viewer's GLB once (about 1.5 screens before the section arrives),
+  merges it per level, part and material (about 125 draw calls), renders into an offscreen canvas and copies that
+  into the screen's 2D canvas (the renderer still takes a list of views: it drew both screens until 2026-11-17). Drag,
+  arrow keys, momentum, then a slow turntable. Sun shadows are drawn only when the geometry moves. The build is cut
+  into slices of about 10 ms so it never stalls scrolling. A device that cannot keep up gets fewer pixels. The deck on
+  the tablet runs its own engine (`axo.js`) on the same GLB, a second WebGL context.
+- **Finishes** are the four illustrative palettes of `#finishes` (`drawings/compose_finishes.py`), the same five
+  swatches (with "as designed") as the deck's Colours slide, put on the model's own parts by Blender object name
+  (`ROLES` in `tools.js`): exterior walls and the white steel surrounds, the roof fascia, the pergola fins, the deck and
+  the exterior oak accents. The swatch shows the palette colour; the model gets it at 80 %, because the sun lifts it.
 - **Floors apart** lifts the upper floor 3.1 m and the roof 5.7 m and cuts each floor just below its ceiling (2.9 and
   5.8 m above the model's zero), so both floors open to the camera; the pergola, the deck and the terrace shade are
   never cut. Some upper-floor furniture is tagged as ground level in the GLB, so a part's level is also taken from
   where it really starts (from 3.3 m up = upper floor, from 6.15 m = roof).
-- **Send to buyer** shows the phone's notification and turns the phone to the tablet's angle. The link also arrives
-  once by itself, 1.6 s after the devices first come into view. Finish and floors are shared by both screens; the
-  phone's swatches work too. Under 760 px the same controls also sit under the stage at thumb size.
-- **Stills**: `assets/img/tools-tablet.webp` and `tools-phone.webp` are each screen's first frame, rendered by the page
-  itself at 2× (1440 × 900 window, default angles, as designed). They show until the model is in and stay where WebGL
-  is missing. Render them again after changing the model, the cameras (`data-az`, `data-el`, `data-fov`, `data-fit`,
-  `data-lift` on each `.scr`) or the light.
-- **Testing**: `?toolsdebug` starts the 3D at once (in a hidden preview pane no observer and no animation frame ever
-  fires) and exposes `window.__tools` (`render()`, `frame(t)`, `scale(s)`, the views and the state).
+- **The link arrives** once by itself too, 1.6 s after the devices first come into view. The phone's facts follow the
+  deck: 2 floors, ≈ 149 m² (five modules), 29.7 m² roof terrace.
+- **Stills**: `assets/img/tools-phone.webp` is the phone's first frame, rendered by the page itself at 2× (1440 × 900
+  window, default angle, as designed); it shows until the model is in and stays where WebGL is missing. Render it
+  again after changing the model, the camera (`data-az`, `data-el`, `data-fov`, `data-fit`, `data-lift` on the phone's
+  `.scr`) or the light. The tablet's poster `assets/img/deck-tablet.jpg` is the deck's slide 4 at 1194 × 834, the
+  house fully built, captured with headless Chrome through DevTools (wait for `.asm-3d.ready`, then about 40 s, since
+  the software renderer settles slowly); capture it again after a change to the deck or the model.
+  `tools-tablet.webp` (the old app's still) is no longer used.
+- **Testing**: `?toolsdebug` starts the phone's 3D at once (in a hidden preview pane no observer and no animation frame
+  ever fires) and exposes `window.__tools` (`render()`, `frame(t)`, `scale(s)`, the views and the state). The deck's
+  frame can be driven from the page: `document.querySelector('#deckScreen iframe').contentWindow.go(n)` (n from 0),
+  and its buttons clicked through `contentDocument`.
 
-Measured on this machine (2026-11-15): loading and decoding 0.7–1.2 s, building 0.4 s of work, one frame of both
-screens at 2× 3.8 ms.
+Measured on this machine (2026-11-15, both screens then): loading and decoding 0.7–1.2 s, building 0.4 s of work, one
+frame of both screens at 2× 3.8 ms.
+
+## The interactive presentation
+
+`presentation/index.html` is a seller's sales presentation of the demonstration house: the tool a sales team runs on
+a tablet with a buyer, to show the house before it is built. 12 slides on a 1194 × 834 stage (a landscape tablet
+screen) scaled to the window, in the site's own look (white page, light Inter Tight, ink pills, light grey cards, an
+app bar like the `#tools` tablet). It speaks to the buyer and keeps the demonstration labels. Dots and ← → move
+between slides, so do the arrow keys and a sideways swipe. Its address picks a mode:
+
+- `?mode=inline#4`: the tablet in `#tools`. It opens on the live 3D model, which builds itself once the tablet is in
+  view; the wheel only zooms the model with Ctrl / Cmd, so the page keeps its scroll. Inside a frame it also shows
+  "Send to buyer" in its app bar and posts what the seller does to the page (`tell()`; see "The sales tools
+  section"). `deckTablet()` in `main.js` makes the iframe when the section comes near the screen; under 760 px the
+  screen is too small to use, so the poster (`deck-tablet.jpg`) stays and a tap opens the full screen (checked again
+  whenever the window crosses 760 px).
+- `?mode=full#n`: the full-screen dialog `#deckLb` ("Open full screen"), started at the slide the tablet shows.
+  `deckBox()` makes the iframe on open and drops it on close; Esc inside the deck posts `{deck: 'close'}` to the page.
+- no mode: the page on its own ("Open in a new tab").
+
+It started as tool 04 of the white-label site (`tools/container-presentation/` on bzik-white-label.netlify.app,
+published 2026-11-09: a pitch for the visualization service, on the first v12 house); that original stays live there.
+On 2026-11-17 it moved to the redesign (every slide takes its media from `../assets`, so it follows the site's files),
+got its own section on the page, was redrawn in the site's look and was rewritten as the seller's tool; the same
+evening it moved onto the `#tools` tablet in place of the app concept, and its own section went, and the four
+exterior renders replaced the AI-assisted photographs on slides 1, 2, 7, 9 and 12.
+
+| # | Slide | Source |
+|---|---|---|
+| 1 | Welcome: "Your home, before it's built." | `render-garden-2560.jpg` (the house on the right, clear of the text); buttons to the tour and to the 3D |
+| 2 | At a glance | six facts (floors, ≈ 149 m² of modules, footprint, 29.7 m² terrace, baths, solar roof); `render-entrance-2560.jpg` |
+| 3 | The plans | `plan-gf-ink-clean.webp` / `plan-uf-ink-clean.webp` with a floor switch; room lists named as on the drawings |
+| 4 | Explore in 3D | `js/axo.js` on `house-redesigned-v2.glb`: whole house, floors apart, each floor cut, look inside, build |
+| 5 | The rooms | the v3 editorial interiors and room-clip posters |
+| 6 | Walk through | seven clips of `video/walk/`, played in order |
+| 7 | Outside | "The house from every side.": the four renders in a 2 × 2 grid, large on a tap with their captions |
+| 8 | Colours | the five `#finishes` palettes on `finish-south-*-photo.webp` (rendered from the model), swatches as in `#tools` |
+| 9 | Materials | the house as designed: 7 outside and 7 inside materials, swatch colours from the GLB's materials; a tall slice of `render-entrance-2560.jpg` (door, oak boarding, plaster) |
+| 10 | How it's built | `video/exploded-axo.mp4`, four phases; "Watch it build in 3D" jumps to slide 4 and plays the build |
+| 11 | What's included | the demonstration specification in six groups, from the model |
+| 12 | Next steps | `render-west-2560.jpg` (the house left of the panel); four example steps; a QR code of the presentation's own address |
+
+- **Explore in 3D**: build 0–10 follows the GLB's `web_step` tags. A dock under the model (Whole house / Floors apart
+  / Ground floor / Upper floor, Look inside with the container skins, roof and PV off, play and the build slider) and
+  the ten build steps beside it. "Floors apart" shows the engine's callouts with the room names the deck passes in
+  (`names`, new in `axo.js?v=32`; the site's Live 3D viewer keeps its module names). The floor cuts are the site's
+  "View plan" cuts at a higher zoom. The canvas wrapper is sized by script to the view as it appears on screen and
+  scaled back into the stage, so the model renders at the screen's resolution. The canvas stays hidden until
+  `axo.ready` (true once the GLB has replaced the engine's drawn massing), so the build plays on the real model;
+  opened from a file on disk the model cannot load, and the slide says so.
+- **Facts, written by hand, check after a model change** (read from the GLB and the drawings on 2026-11-17): the step
+  texts (`STEPS`), the room lists (upper floor as labelled on `plan-uf-ink-clean.webp`: bedroom, ensuite, walk-in,
+  bath, office, landing, roof terrace), the materials board (cladding = warm white plaster, facade boarding and doors =
+  oak, deck and pergola beams = teak, posts and pergola fins = matte charcoal, window frames = black aluminium with
+  clear double glazing, floors = oak parquet, worktop = black marble, range = turquoise, bathrooms = glazed stoneware
+  and brushed brass) and the specification. Swatch colours are the GLB's base colours converted to sRGB.
+- **Not in the deck on purpose**: prices, delivery times and room areas (no verified figures); the four next steps are
+  marked as an example.
+- **Provenance**: each image slide says which images are AI-assisted (the rooms and the walkthrough clips); the renders
+  say "Rendered from the 3D model" with the garden called illustrative; the plans, the elevations, the live model and
+  the exploded film are called straight from the model.
+- **QR code**: qrcodejs loads deferred; until it is in, the address stands in as text, cleared once the code is drawn
+  (opened straight on slide 12 the two used to overlap; fixed 2026-11-17).
+- **Testing in a hidden preview pane**: set a real viewport (`resize_window`), inject `*{transition:none!important}`,
+  call `go(n)` in the deck (`n` counts from 0) and wait a second or two before a screenshot, which can lag a frame.
+  When the pane's screenshots come back blank, capture the slides with headless Chrome over DevTools instead (a
+  1194 × 834 window, wait for `.slide.active`).
 
 ## Cache busting
 
@@ -320,17 +436,21 @@ Bump them after edits, or drop them when hosting with proper cache headers.
 
 ## Dependencies (CDN)
 
-GSAP + ScrollTrigger (cdnjs), Lenis (unpkg), Three.js (jsdelivr), Inter Tight and Heebo (Google Fonts).
+GSAP + ScrollTrigger (cdnjs), Lenis (unpkg), Three.js (jsdelivr), Inter Tight and Heebo (Google Fonts); the sales
+presentation also loads qrcodejs 1.0.0 (cdnjs) for its "Take it home" code, and shows its address as text without it.
 
 ## Known limitations
 
 - The Hebrew copy is a draft and needs native review.
-- Every photograph on the page is an AI-assisted editorial image (see "The editorial images"): the garden, furniture
-  and small details are illustrative, and each section says so. Straight from the model: the drawings, the finish
-  elevations, the 3D viewer, the exploded film and the model half of the `#work` comparison. The walkthrough clips are
+- The interactive presentation (`presentation/`) is in English only; the `#tools` note says so in both languages, and
+  the deck does not mirror in Hebrew.
+- Every photograph on the page but the four exterior renders of deliverable 02 is an AI-assisted editorial image (see
+  "The editorial images"): the garden, furniture and small details are illustrative, and each section says so.
+  Straight from the model: the drawings, the exterior renders (their garden is illustrative), the finish elevations,
+  the 3D viewer, the exploded film and the model half of the `#work` comparison. The walkthrough clips are
   AI-finished over the model's camera path.
 - Three of the four isometric scenes are still in production; their cards are hidden by CSS until the clips exist.
-- The app screens in `#tools` are a concept: the finish swatches, the floors switch and "Send to buyer" work; the
-  phone's "Ask the sales team" button and the status bars are pictures.
+- The phone screen in `#tools` is a concept: its finish swatches work and it follows the presentation on the tablet;
+  its "Ask the sales team" button and the status bar are pictures. The tablet runs the working presentation.
 - The ad film's music is an original score composed for it in code; it has not had a listening check yet.
 - No form or analytics; the contact button is a mailto link.

@@ -19,7 +19,7 @@ const clamp01 = v => Math.max(0, Math.min(1, v));
 const smooth = v => { v = clamp01(v); return v * v * (3 - 2 * v); };
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 
-export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheets: withSheets = true, look = 'line' } = {}) {   // fit > 1 frames wider; model = GLB exported from the master; look = 'line' drawing or 'real' Blender materials; sheets = show the client's PDF pages
+export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheets: withSheets = true, look = 'line', names = null } = {}) {   // fit > 1 frames wider; model = GLB exported from the master; look = 'line' drawing or 'real' Blender materials; sheets = show the client's PDF pages; names = {build step: callout text} over the defaults below (the sales presentation names rooms instead of modules)
   const hero = mode === 'hero', sheets = !hero && withSheets;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.localClippingEnabled = true;
@@ -302,8 +302,8 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
   /* ---------- real geometry: GLB exported from Container House.blend (see Container House/blender/web-model) ---------- */
   const KIND = { shell: C.shell, steel: C.steel, frame: C.frame, glass: C.glass, timber: C.timber, pier: C.pier,
                  roof: C.roof, pv: C.pv, interior: C.interior, accent: C.accent, floor: C.floor, furniture: C.furniture };
-  const LABEL = { 0: 'Piers', 1: 'C1', 2: 'C2', 3: 'C3', 4: 'Seam steel + return stair', 5: 'C4', 6: 'C5',
-                  7: 'Glazing + furniture', 8: 'Deck + timber pergola', 9: 'Terrace shade + PV' };
+  const LABEL = Object.assign({ 0: 'Piers', 1: 'C1', 2: 'C2', 3: 'C3', 4: 'Seam steel + return stair', 5: 'C4', 6: 'C5',
+                  7: 'Glazing + furniture', 8: 'Deck + timber pergola', 9: 'Terrace shade + PV' }, names);
   // Black silhouette for rounded furniture: back faces pushed out along smooth normals (inverted hull).
   function outline(geom) {
     geom.computeVertexNormals();
@@ -725,10 +725,14 @@ export function createAxo(canvas, { mode = 'story', fit = 1, model = null, sheet
   }
   resize();
   const ro = new ResizeObserver(resize); ro.observe(canvas);
-  if (model) (real ? loadModelReal : loadModel)(model).catch(e => console.warn('Web model unavailable, keeping the drawn massing.', e));
+  // ready: true once the GLB has replaced the drawn massing, false when it could not load (the massing stays). The
+  // presentation (presentation/index.html) waits on it so its build plays on the real model.
+  const ready = model ? (real ? loadModelReal : loadModel)(model).then(() => true,
+    e => { console.warn('Web model unavailable, keeping the drawn massing.', e); return false; }) : Promise.resolve(false);
 
   const set = key => v => { if (target[key] !== v) { target[key] = v; kick(); } };
   return {
+    ready,
     setBuild: set('build'), setExtrude: set('extrude'), setView: set('view'),
     setExplode: set('explode'), setSection: set('section'),
     setLabels(on) { labels = on; kick(); },
